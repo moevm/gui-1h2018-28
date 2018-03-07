@@ -18,6 +18,7 @@ class Manager(QMainWindow):
         pass   
     def authVK(self):
         self.__authorization.authorizationVK(self)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Manager()

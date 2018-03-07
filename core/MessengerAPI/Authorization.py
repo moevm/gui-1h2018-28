@@ -8,9 +8,10 @@ from PyQt5 import Qt
 import json
 import pickle
 
+from MessengerAPI.VKApi import VKApi
 
 
-class MsgBox(Qt.QDialog):
+class VKAuth(Qt.QDialog):
     def __init__(self,window,authHandler):
         super().__init__(window)
         layout = Qt.QVBoxLayout(self)
@@ -25,7 +26,9 @@ class Authorization():
     # Here will be the instance stored.
     __instance = None
     # Here will be the private keys stored.
-    __privateKeys={"vk":None,"telegram":None}
+    __privateKeys={"vk":[],"telegram":[]}
+    # Here will be the classes to work with messenger api
+    __messengerClasses={"vk":[],"telegram":[]}
     # Dialog with login form
     __loginDialog=None
 
@@ -56,20 +59,15 @@ class Authorization():
             pickle.dump(self.__privateKeys, f)
         pass
 
-    def getPrivateKey(self,messenger):
-        if messenger in self.__privateKeys:
-            return self.__privateKeys["vk"]
-        return None
 
     def authorizationVK(self,parent):
-        self.__loginDialog = MsgBox(parent,self.vkUrlChangeHandler)
+        self.__loginDialog = VKAuth(parent,self.vkUrlChangeHandler)
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 
     def vkUrlChangeHandler(self,url):
         currentUrl = url.url()
         if (currentUrl.find("https://oauth.vk.com/blank.html#access_token=")!=-1):
-            self.__privateKeys["vk"] = currentUrl[45:currentUrl.find("&expires_in")]
-            print(self.__privateKeys)
+            self.__privateKeys["vk"].append(currentUrl[45:currentUrl.find("&expires_in")])
             self.saveKeys()
             self.__loginDialog.close()
