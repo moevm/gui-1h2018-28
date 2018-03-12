@@ -12,9 +12,15 @@ class Manager(QMainWindow):
         super().__init__()
         self.rightSubMenu = QVBoxLayout()
         self.initUI()
+<<<<<<< HEAD
+        print()
+
+    def initUI(self):
+=======
 
     def initUI(self):
         # self.statusBar().showMessage('Ready')
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
         self.resize(800, 600)
         self.setWindowTitle('Messenger')
         wid = QWidget(self)
@@ -31,15 +37,50 @@ class Manager(QMainWindow):
 
         mainLayout.addLayout(leftMenu)
         mainLayout.addLayout(self.rightMenu)
+<<<<<<< HEAD
+
+        leftWidgetList = QListWidget()
+        leftWidgetList.setMaximumSize(300, 10000)
+        leftWidgetList.clicked.connect(self.loadDialogMessage)
+        leftWidgetList.setStyleSheet("""QListWidget{border: 0;}
+                                        QScrollBar::handle:vertical {
+                                            background: #DCDCDC;
+                                            border-radius: 10px;
+                                            min-height: 20px;
+                                        }""")
+        leftMenu.addWidget(leftWidgetList)
+        self.loadDialogs(leftWidgetList)
+=======
         leftMenu.addWidget(QPushButton('Friend1btn2'))
         leftMenu.addWidget(QPushButton('Friend2btn3'))
         leftMenu.addItem(QSpacerItem(220, 0, QSizePolicy.Fixed, QSizePolicy.Expanding))
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
         self.rightMenu.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
         self.MessageMenuInit()
         self.show()
         pass
 
+<<<<<<< HEAD
+    def loadDialogMessage(self, item):
+        print(item.row())
+        self.messageList.clear()
+        msgs = self.__authorization.getMessageByN(item.row(), 0)
+        print(msgs)
+        for msg in msgs['items']:
+            self.addMessageToLayout(msg['body'], self.messageList, msg['from_id'] == msg['user_id'])
+        pass
+
+    def loadDialogs(self, layout):
+        dialogs = self.__authorization.getMessengerClassesVK().getDialogs()
+        print(dialogs[0].getTitle())
+        for n, dialog in enumerate(dialogs):
+            self.addDialogToLayout(layout, dialog.getTitle())
+        pass
+
+    def clearLayout(self, layout):
+=======
     def clearLayout(self,layout):
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
         while layout.count():
             child = layout.takeAt(0)
             if child.widget() is not None:
@@ -48,6 +89,15 @@ class Manager(QMainWindow):
                 self.clearLayout(child.layout())
         self.rightMenu.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
+<<<<<<< HEAD
+    def addDialogToLayout(self, layout, text):
+        itemN = QListWidgetItem(text)
+        itemN.setSizeHint(QSize(70, 50))
+        layout.addItem(itemN)
+        # layout.setItemWidget(itemN, widget)
+
+=======
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
     def OpenSettings(self):
         self.clearLayout(self.rightMenu)
         msgInit = QPushButton('Close')
@@ -57,12 +107,18 @@ class Manager(QMainWindow):
         vkLogin.clicked.connect(self.loginThrowVK)
         self.rightMenu.addWidget(vkLogin)
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
     def loginThrowVK(self):
         self.__authorization.authorizationVK(self)
         pass
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
     def MessageMenuInit(self):
         self.clearLayout(self.rightMenu)
         self.addUserSubMenu(self.rightSubMenu)
@@ -70,7 +126,11 @@ class Manager(QMainWindow):
         self.MessageWriteMenu(self.rightSubMenu)
         self.rightMenu.addLayout(self.rightSubMenu)
 
+<<<<<<< HEAD
+    def MessageWriteMenu(self, layout):
+=======
     def MessageWriteMenu(self,layout):
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
         msgEnter = QWidget()
         msgEnter.setStyleSheet("background-color:#bef3eb;")
         rightMessageEnter = QHBoxLayout(msgEnter)
@@ -103,19 +163,32 @@ class Manager(QMainWindow):
         bcgColor2.setStyleSheet("background-color: white")
         rightMessageHistory = QVBoxLayout(bcgColor2)
         # rightMessageHistory.addItem(QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Expanding))
+<<<<<<< HEAD
+        self.messageList = QListWidget()
+        rightMessageHistory.setContentsMargins(0, 0, 0, 0)
+        self.messageList.setStyleSheet("""QListWidget{border: 0;}
+=======
         widgetList = QListWidget()
         rightMessageHistory.setContentsMargins(0, 0, 0, 0)
         widgetList.setStyleSheet("""QListWidget{border: 0;}
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
                                 QScrollBar::handle:vertical {
                                     background: #DCDCDC;
                                     border-radius: 10px;
                                     min-height: 20px;
                                 }""")
         # widgetList.setFlow(Qt.AlignBottom)
+<<<<<<< HEAD
+        rightMessageHistory.addWidget(self.messageList)
+        for x in range(0, 50):
+            self.addMessageToLayout("test " + str(x), self.messageList, True)
+            self.addMessageToLayout("test " + str(x), self.messageList, False)
+=======
         rightMessageHistory.addWidget(widgetList)
         for x in range(0, 50):
             self.addMessageToLayout("test " + str(x), widgetList, True)
             self.addMessageToLayout("test " + str(x), widgetList, False)
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
 
         layout.addWidget(bcgColor2)
 
@@ -124,6 +197,10 @@ class Manager(QMainWindow):
             True - my message
             False - message from friend
     '''
+<<<<<<< HEAD
+
+=======
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
     def addMessageToLayout(self, message, layout, sideMessage):
         helpWidget = QWidget()
         msg = QGridLayout(helpWidget)
@@ -140,7 +217,11 @@ class Manager(QMainWindow):
 
         itemN = QListWidgetItem()
         itemN.setSizeHint(QSize(0, 50))
+<<<<<<< HEAD
+        layout.insertItem(0,itemN)
+=======
         layout.addItem(itemN)
+>>>>>>> 8cc603d005f8948c9b8e2b8e389a2cff5a738d59
         layout.setItemWidget(itemN, helpWidget)
 
     def addUserSubMenu(self, layout):
