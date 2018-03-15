@@ -17,6 +17,7 @@ class VKAuth(Qt.QDialog):
         layout = Qt.QVBoxLayout(self)
         self.label = Qt.QLabel("")
         wv = QWebEngineView()
+        wv.page().profile().cookieStore().deleteAllCookies()
         wv.urlChanged.connect(authHandler)
         wv.load(QUrl(
             "https://oauth.vk.com/authorize?client_id=6374130&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,messages,offline&response_type=token&v=5.73"))
@@ -29,8 +30,6 @@ class Authorization:
     __instance = None
     # Here will be the private keys stored.
     __privateKeys = {"vk": [], "telegram": []}
-    # Here will be the classes to work with messenger api
-    __messengerAPI = None
     # Dialog with login form
     __loginDialog = None
 
@@ -54,16 +53,11 @@ class Authorization:
                 print(self.__privateKeys)
         else:
             self.saveKeys()
-        self.__messengerAPI = MessengerAPI(self.__privateKeys)
 
-    def getMessengerClassesVK(self):
-        return self.__messengerAPI
+    def getPrivateKeys(self):
+        return self.__privateKeys
 
-    def getMessengerApi(self):
-        return self.__messengerAPI
 
-    def getMessageByN(self, n, offset):
-        return self.__messengerAPI.getMessageByN(n, offset)
 
     def saveKeys(self):
         with open("privateKeys.pickle", "wb") as f:

@@ -4,40 +4,48 @@ from MessengerAPI.VKApi import VKApi
 class Dialog:
     __dialogId = None
     __title = None
-    __lastMessage = None
-    __messages = None
     __api = None
 
-    def __init__(self, dialog, api):
+    def __init__(self, dialog):
+        self.__messages=[]
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
         self.__dialogId = str(dialog['dialog_id'])
-        print(dialog)
         pass
 
     def getTitle(self):
         return self.__title
 
-    def getMessages(self, offset):
-        return self.__getMess(self.__dialogId, offset)
+    def loadMessages(self, offset):
+        for msg in self.__getMess(self.__dialogId,offset):
+            self.__messages.append(Message(msg))
         pass
+
+    def getMessages(self):
+        self.loadMessages(len(self.__messages))
+        return self.__messages
 
 
 class Message:
-    def __init__(self, json):
-        if json['messenger'] == "VK":
-            self.parseMessageVK(json)
-            return
-        if json['messenger'] == "Telegram":
-            self.parseMessageTelegram(json)
-            return
+    __text = "Unknown"
+    __fromId = "Unknown"
+    __myMessage = False
+    __attachments = None
+
+    def __init__(self, message):
+        self.__text = message['text']
+        self.__fromId = message['from_id']
+        self.__myMessage = message['my_message']
         pass
 
-    def parseMessageVK(self, json):
-        pass
+    def getText(self):
+        return self.__text
 
-    def parseMessageTelegram(self, json):
-        pass
+    def isMyMessage(self):
+        return self.__myMessage
+
+    def fromId(self):
+        return self.__fromId
 
 
 class Attachments:
@@ -47,27 +55,19 @@ class Attachments:
 
 class MessengerAPI:
     __messengerAPI = {'vk': [], 'telegram': []}
-    __dialogs = []
 
     def __init__(self, authTokens):
         self.__createmessengerClasses(authTokens)
-        self.loadDialogs()
         pass
 
     def loadDialogs(self):
-        self.__dialogs = []
+        dialogs = []
 
         for api in self.__messengerAPI:
             for mess in self.__messengerAPI[api]:
-                print(mess.getMyDialogs())
                 for dialog in mess.getMyDialogs():
-                    self.__dialogs.append(Dialog(dialog, mess))
-
-    def getDialogs(self):
-        return self.__dialogs
-
-    def getMessageByN(self, n, offset):
-        return self.__dialogs[n].getMessages(offset)
+                    dialogs.append(Dialog(dialog))
+        return dialogs
 
     def __createmessengerClasses(self, authTokens):
         for mess in authTokens:

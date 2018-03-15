@@ -3,9 +3,12 @@ import json
 
 
 class VKApi:
+    __myId = None
+
     def __init__(self, authToken):
         self.vk_session = vk_api.VkApi(token=authToken)
         self.vkApi = self.vk_session.get_api()
+        self.__myId = self.vkApi.users.get()[0]['id']
         pass
 
     def getDialog(self, user):
@@ -14,8 +17,22 @@ class VKApi:
     def getMessagesByChat(self, chatId, offset):
         return self.getMessagesById("2000000000" + chatId, offset)
 
+    '''
+    [{
+        "text": text,
+        "attach":attach,
+        "from_id":id
+        "my_id":myId ...]
+    '''
+
     def getMessagesById(self, userId, offset):
-        return self.vkApi.messages.getHistory(user_id=userId, offset=offset)
+        messages = self.vkApi.messages.getHistory(user_id=userId, offset=offset)['items']
+        msgToReturn = []
+        for msg in messages:
+            msgToReturn.append({'text': msg['body'],
+                                'from_id': str(msg['from_id']), 'my_message': msg['from_id'] == self.__myId})
+
+        return msgToReturn
 
     def getUserById(self, user_ids):
         return self.vkApi.users.get(user_ids=','.join(user_ids))
@@ -35,7 +52,6 @@ class VKApi:
 
     def getMyDialogs(self):
         dialogs = self.vkApi.messages.getDialogs()
-        print(dialogs)
         usersId = []
         groupsId = []
         itemsToReturn = []
@@ -54,7 +70,6 @@ class VKApi:
                     groupsId.append(userHelpId[1:])
         userInfo = self.getUserById(usersId)
         groupInfo = self.getGroupById(groupsId)
-        print(groupInfo)
         numUser = 0
         numGroup = 0
         for n, dialog in enumerate(dialogs['items']):
