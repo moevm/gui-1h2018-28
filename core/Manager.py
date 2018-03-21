@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtGui import *
+
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+
 from MessengerAPI.Authorization import Authorization
 from MessengerAPI.MessengerAPI import MessengerAPI
 from UIInit import UIInit
@@ -14,9 +14,10 @@ class Manager():
     __ui = None
 
     def __init__(self):
-        self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
         app = QApplication(sys.argv)
         self.__ui = UIInit(self)
+        self.__authorization.setWidget(self.__ui)
+        self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
         self.__dialogs = self.__messenger.loadDialogs()
         print(self.__dialogs)
         self.loadDialogs()
@@ -31,12 +32,16 @@ class Manager():
         pass
 
     def loginThrowVK(self):
-        self.__authorization.authorizationVK(self.__ui)
+        self.__authorization.authorizationVK()
         pass
 
     def loadDialogs(self):
         for dialog in self.__dialogs:
             self.__ui.addDialogToLayout(dialog.getTitle())
+        pass
+
+    def loginThowTelegram(self):
+        self.__authorization.authorizationTelegram()
         pass
 
     def loadUserDialog(self, user):

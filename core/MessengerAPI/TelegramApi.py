@@ -1,13 +1,13 @@
-import vk_api
+from telethon import TelegramClient
 
 
-class VKApi:
-    __myId = None
+class TelegramApi:
+    api_id = 223447
+    api_hash = '1827d8b0aa6334c8efc32f941d3559dc'
 
-    def __init__(self, authToken):
-        self.vk_session = vk_api.VkApi(token=authToken)
-        self.vkApi = self.vk_session.get_api()
-        self.__myId = self.vkApi.users.get()[0]['id']
+    def __init__(self, pathToSession):
+        self.client = TelegramClient(pathToSession, self.api_id, self.api_hash)
+        self.client.get_dialogs()
         pass
 
     def getDialog(self, user):

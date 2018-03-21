@@ -1,6 +1,6 @@
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 
 
 class UIInit(QMainWindow):
@@ -58,6 +58,9 @@ class UIInit(QMainWindow):
         msgInit = QPushButton('Close')
         msgInit.clicked.connect(self.__manager.MessageMenuInit)
         self.rightMenu.addWidget(msgInit)
+        telegramLogin = QPushButton('Login throw Telegram')
+        telegramLogin.clicked.connect(self.__manager.loginThowTelegram)
+        self.rightMenu.addWidget(telegramLogin)
         vkLogin = QPushButton('Login throw VK')
         vkLogin.clicked.connect(self.__manager.loginThrowVK)
         self.rightMenu.addWidget(vkLogin)
@@ -154,7 +157,7 @@ class UIInit(QMainWindow):
         iconProfile.setIconSize(QSize(35, 35))
         iconProfile.setStyleSheet("background-color: white;border-radius: 17px;")
         rightSubMenu.addWidget(iconProfile)
-        profileBtn = QPushButton('Dude profile')
+        profileBtn = QPushButton('Profile')
         profileBtn.setStyleSheet("background-color: transparent;border-radius: 20px;font-size: 10pt;")
         rightSubMenu.addWidget(profileBtn)
         rightSubMenu.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
