@@ -1,3 +1,4 @@
+import telethon
 from telethon import TelegramClient
 
 
@@ -7,6 +8,7 @@ class TelegramApi:
 
     def __init__(self, pathToSession):
         self.client = TelegramClient(pathToSession, self.api_id, self.api_hash)
+        print(self.client.connect())
         self.client.get_dialogs()
         pass
 
@@ -14,9 +16,7 @@ class TelegramApi:
         pass
 
     def getMessagesByChat(self, chatId, offset):
-        msg = self.getMessagesById("2000000000" + chatId, offset)
-        print(msg)
-        return msg
+        return []
 
     '''
     [{
@@ -27,19 +27,13 @@ class TelegramApi:
     '''
 
     def getMessagesById(self, userId, offset):
-        messages = self.vkApi.messages.getHistory(user_id=userId, offset=offset)['items']
-        msgToReturn = []
-        for msg in messages:
-            msgToReturn.append({'text': msg['body'],
-                                'from_id': str(msg['from_id']), 'my_message': msg['from_id'] == self.__myId})
-
-        return msgToReturn
+        return []
 
     def getUserById(self, user_ids):
-        return self.vkApi.users.get(user_ids=','.join(user_ids))
+        return []
 
     def getGroupById(self, group_ids):
-        return self.vkApi.groups.getById(group_ids=','.join(group_ids))
+        return []
 
     '''
     Format return v0.1
@@ -52,39 +46,24 @@ class TelegramApi:
     '''
 
     def getMyDialogs(self):
-        dialogs = self.vkApi.messages.getDialogs()
-        usersId = []
-        groupsId = []
-        itemsToReturn = []
-        for dialog in dialogs['items']:
-            if 'chat_id' in dialog['message']:
-                itemsToReturn.append(
-                    {"dialog_id": dialog['message']['chat_id'], "getMessages": self.getMessagesByChat,
-                     "dialog_title": dialog['message']['title']})
+        dialogs = []
+        for dialog in self.client.get_dialogs(limit=10):
+            print(dialog.entity.__dict__)
+            if isinstance(dialog.entity, telethon.tl.types.User):
+                dialogs.append({
+                    "dialog_id": dialog.entity.id,
+                    "dialog_title": str(dialog.entity.first_name) + str(dialog.entity.last_name),
+                    "last_message": "last message",
+                    "getMessages": self.getMessagesById
+                })
             else:
-                itemsToReturn.append({"dialog_id": dialog['message']['user_id'], "getMessages": self.getMessagesById,
-                                      "dialog_title": "Unknown"})
-                userHelpId = str(dialog['message']['user_id'])
-                if userHelpId[0:1] != '-':
-                    usersId.append(userHelpId)
-                else:
-                    groupsId.append(userHelpId[1:])
-        userInfo = self.getUserById(usersId)
-        groupInfo = self.getGroupById(groupsId)
-        numUser = 0
-        numGroup = 0
-        for n, dialog in enumerate(dialogs['items']):
-            if len(userInfo) > numUser:
-                if userInfo[numUser]['id'] == dialog['message']['user_id']:
-                    itemsToReturn[n]['dialog_title'] = userInfo[numUser]['first_name'] + ' ' + userInfo[numUser][
-                        'last_name']
-                    numUser += 1
-            if len(groupInfo) > numGroup:
-                if str(groupInfo[numGroup]['id']) == str(dialog['message']['user_id'])[1:]:
-                    itemsToReturn[n]['dialog_title'] = groupInfo[numGroup]['name']
-                    numGroup += 1
-
-        return itemsToReturn
+                dialogs.append({
+                    "dialog_id": dialog.entity.id,
+                    "dialog_title": dialog.entity.title,
+                    "last_message": "last message",
+                    "getMessages": self.getMessagesById
+                })
+        return dialogs
 
     def userInfo(self, user):
         pass

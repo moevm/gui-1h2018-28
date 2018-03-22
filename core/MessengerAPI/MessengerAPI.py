@@ -1,3 +1,4 @@
+from MessengerAPI.TelegramApi import TelegramApi
 from MessengerAPI.VKApi import VKApi
 
 
@@ -74,6 +75,8 @@ class MessengerAPI:
             for key in authTokens[mess]:
                 if mess == "vk":
                     self.__messengerAPI['vk'].append(VKApi(key))
+                if mess == "telegram":
+                    self.__messengerAPI['telegram'].append(TelegramApi(key))
 
     def userInfo(self, user):
         pass

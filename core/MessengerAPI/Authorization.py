@@ -52,7 +52,7 @@ class TelegramCheckCode(Qt.QDialog):
 class Authorization:
     # Here will be the instance stored.
     __instance = None
-    # Here will be the private keys stored.
+    # Here will be the private keys VK stored and telegram : telethon clients
     __privateKeys = {"vk": [], "telegram": []}
     # Dialog with login form
     __loginDialog = None
@@ -103,6 +103,9 @@ class Authorization:
     def codeSetHandler(self):
         print(self.__loginDialog.lineEdit.text())
         self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
+        self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
+        self.saveKeys()
+        self.__loginDialog.exec_()
         # todo: check error, and save user phone
 
     def authorizationTelegram(self):
