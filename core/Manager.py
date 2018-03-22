@@ -14,14 +14,18 @@ class Manager():
     __ui = None
 
     def __init__(self):
-        app = QApplication(sys.argv)
-        self.__ui = UIInit(self)
-        self.__authorization.setWidget(self.__ui)
-        self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
-        self.__dialogs = self.__messenger.loadDialogs()
-        print(self.__dialogs)
-        self.loadDialogs()
-        sys.exit(app.exec_())
+        try:
+            app = QApplication(sys.argv)
+            self.__ui = UIInit(self)
+            self.__authorization.setWidget(self.__ui)
+            self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
+            self.__dialogs = self.__messenger.loadDialogs()
+            print(self.__dialogs)
+            self.loadDialogs()
+            sys.exit(app.exec_())
+        except BaseException as e:
+            print(e)
+            raise e
 
     def OpenSettings(self):
         self.__ui.OpenSettings()

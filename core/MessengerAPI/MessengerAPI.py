@@ -63,7 +63,6 @@ class MessengerAPI:
 
     def loadDialogs(self):
         dialogs = []
-
         for api in self.__messengerAPI:
             for mess in self.__messengerAPI[api]:
                 for dialog in mess.getMyDialogs():
