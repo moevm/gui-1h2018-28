@@ -52,7 +52,6 @@ class Manager():
         print(user.row())
         self.__ui.clearMessageLayout()
         for message in self.__dialogs[user.row()].getMessages():
-            print(message.getText())
             self.__ui.addMessageToLayout(message.getText(), message.isMyMessage())
         print("----")
         pass

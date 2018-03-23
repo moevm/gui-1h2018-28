@@ -19,15 +19,15 @@ class TelegramApi:
         print(chatId)
         return []
 
-    '''
-    [{
-        "text": text,
-        "attach":attach,
-        "from_id":id
-        "my_id":myId ...]
-    '''
 
     def getMessagesById(self, userId, offset):
+        """
+        [{
+            "text": text,
+            "attach":attach,
+            "from_id":id
+            "my_id":myId ...]
+        """
         print(userId)
         print(PeerUser(userId))
         print(self.client.get_message_history(userId))
@@ -51,13 +51,25 @@ class TelegramApi:
 
     def parseMessage(self, msg):
         if getattr(msg, 'media', None):
+            print("---------- MEDIA -----------")
+            print(msg.media.__dict__)
+            print("---------- END -----------")
             return '<{}> {}'.format(type(msg.media).__name__, msg.message)
         elif hasattr(msg, 'message'):
+            print("---------- MESSAGE -----------")
+            print(msg.message)
+            print("---------- END -----------")
             return msg.message
         elif hasattr(msg, 'action'):
+            print("---------- ACTION -----------")
+            print(msg.action.__dict__)
+            print("---------- END -----------")
             return str(msg.action)
         else:
             # Unknown message, simply print its class name
+            print("---------- Unknown -----------")
+            print(msg.__dict__)
+            print("---------- END -----------")
             return type(msg).__name__
 
 

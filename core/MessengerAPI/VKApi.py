@@ -21,13 +21,13 @@ class VKApi:
 
 
     def getMessagesById(self, userId, offset):
-        '''
+        """
         [{
             "text": text,
             "attach":attach,
             "from_id":id
             "my_id":myId ...]
-        '''
+        """
         messages = self.vkApi.messages.getHistory(user_id=userId, offset=offset)['items']
         msgToReturn = []
         for msg in messages:
@@ -43,7 +43,7 @@ class VKApi:
         return self.vkApi.groups.getById(group_ids=','.join(group_ids))
 
     def getMyDialogs(self):
-        '''
+        """
         Format return v0.1
         [{
             "dialog_id":99999 (user_id or chat_id)
@@ -51,7 +51,7 @@ class VKApi:
             "last_message":Message
             "getMessages":Method to get more messages
         },...]
-        '''
+        """
         dialogs = self.vkApi.messages.getDialogs()
         usersId = []
         groupsId = []
