@@ -118,7 +118,7 @@ class UIInit(QMainWindow):
     def addMessengerToLayout(self, info):
         itemN = QListWidgetItem()
         self.dialogList.addItem(itemN)
-        row = MyCustomWidget(info['name'], QIcon(info['icon']))
+        row = MessengerWidget(info['name'], QIcon(info['icon']))
         itemN.setSizeHint(row.minimumSizeHint())
         self.dialogList.setItemWidget(itemN, row)
 
