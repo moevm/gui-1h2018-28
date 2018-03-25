@@ -7,8 +7,15 @@ class VKApi:
     def __init__(self, authToken):
         self.vk_session = vk_api.VkApi(token=authToken)
         self.vkApi = self.vk_session.get_api()
-        self.__myId = self.vkApi.users.get()[0]['id']
+        #self.__myId = self.vkApi.users.get()[0]['id']
+        self.__myId = 0
         pass
+
+    def getName(self):
+        return "vk testName"
+
+    def getPathIcon(self):
+        return '../resources/vk_logo.png'
 
     def getDialog(self, user):
         pass

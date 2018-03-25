@@ -12,6 +12,12 @@ class TelegramApi:
         print(self.client.connect())
         pass
 
+    def getName(self):
+        return "telegram testName"
+
+    def getPathIcon(self):
+        return '../resources/telegram_logo.png'
+
     def getDialog(self, user):
         pass
 
@@ -95,7 +101,7 @@ class TelegramApi:
             if isinstance(dialog.entity, telethon.tl.types.User):
                 dialogs.append({
                     "dialog_id": dialog.dialog.peer.user_id,
-                    "dialog_title": str(dialog.entity.first_name) + str(dialog.entity.last_name),
+                    "dialog_title": str(dialog.entity.first_name) +' '+ str(dialog.entity.last_name),
                     "last_message": "last message",
                     "getMessages": self.getMessagesByUserId
                 })

@@ -3,6 +3,39 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
+class MyCustomWidget(QWidget):
+    def __init__(self, name, logo, parent=None):
+        super(MyCustomWidget, self).__init__(parent)
+        self.row = QHBoxLayout()
+        sctickersButton = QPushButton()
+        sctickersButton.setIconSize(QSize(35, 35))
+        sctickersButton.setStyleSheet("background-color: white;border-radius: 17px;")
+        sctickersButton.setIcon(logo)
+        self.row.addWidget(sctickersButton)
+        self.row.addWidget(QLabel(name))
+        self.row.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        self.setLayout(self.row)
+
+
+class MessengerWidget(QWidget):
+    def __init__(self, name, logo, parent=None):
+        super(MessengerWidget, self).__init__(parent)
+        self.row = QHBoxLayout()
+        sctickersButton = QPushButton()
+        sctickersButton.setIconSize(QSize(35, 35))
+        sctickersButton.setStyleSheet("background-color: transparent;")
+        sctickersButton.setIcon(logo)
+        self.row.addWidget(sctickersButton)
+        self.row.addWidget(QLabel(name))
+        self.row.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        downButton = QPushButton()
+        downButton.setIconSize(QSize(35, 35))
+        downButton.setStyleSheet("background-color: transparent;")
+        downButton.setIcon(QIcon('../resources/down_arrow.png'))
+        self.row.addWidget(downButton)
+        self.setLayout(self.row)
+
+
 class UIInit(QMainWindow):
     __manager = None
 
@@ -64,13 +97,30 @@ class UIInit(QMainWindow):
         vkLogin = QPushButton('Login throw VK')
         vkLogin.clicked.connect(self.__manager.loginThrowVK)
         self.rightMenu.addWidget(vkLogin)
+        vkLogin = QPushButton('Login VK Group')
+        vkLogin.clicked.connect(self.__manager.loginThrowVKGroup)
+        self.rightMenu.addWidget(vkLogin)
         pass
 
+    def clearDialogs(self):
+        self.dialogList.clear()
+
     def addDialogToLayout(self, text):
-        itemN = QListWidgetItem(text)
-        itemN.setSizeHint(QSize(70, 50))
+        itemN = QListWidgetItem()
+        # itemN.setSizeHint(QSize(100, 100))
         self.dialogList.addItem(itemN)
+        row = MyCustomWidget(text, QIcon('../resources/testProfileLogo.png'))
+        itemN.setSizeHint(row.minimumSizeHint())
+        # Associate the custom widget to the list entry
+        self.dialogList.setItemWidget(itemN, row)
         # layout.setItemWidget(itemN, widget)
+
+    def addMessengerToLayout(self, info):
+        itemN = QListWidgetItem()
+        self.dialogList.addItem(itemN)
+        row = MyCustomWidget(info['name'], QIcon(info['icon']))
+        itemN.setSizeHint(row.minimumSizeHint())
+        self.dialogList.setItemWidget(itemN, row)
 
     def MessageMenuInit(self):
         self.clearLayout(self.rightMenu)
@@ -124,12 +174,12 @@ class UIInit(QMainWindow):
         rightMessageHistory.addWidget(self.messageList)
         layout.addWidget(bcgColor2)
 
-    '''
-        sideMessage
-            True - my message
-            False - message from friend
-    '''
     def addMessageToLayout(self, message, sideMessage):
+        """
+            sideMessage
+                True - my message
+                False - message from friend
+        """
         helpWidget = QWidget()
         msg = QGridLayout(helpWidget)
         msg.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding))
@@ -145,7 +195,7 @@ class UIInit(QMainWindow):
 
         itemN = QListWidgetItem()
         itemN.setSizeHint(QSize(0, 50))
-        self.messageList.insertItem(0,itemN)
+        self.messageList.insertItem(0, itemN)
         self.messageList.setItemWidget(itemN, helpWidget)
 
     def addUserSubMenu(self, layout):

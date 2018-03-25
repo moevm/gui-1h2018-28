@@ -8,7 +8,7 @@ class Dialog:
     __api = None
 
     def __init__(self, dialog):
-        self.__messages=[]
+        self.__messages = []
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
         self.__dialogId = str(dialog['dialog_id'])
@@ -18,7 +18,7 @@ class Dialog:
         return self.__title
 
     def loadMessages(self, offset):
-        for msg in self.__getMess(self.__dialogId,offset):
+        for msg in self.__getMess(self.__dialogId, offset):
             self.__messages.append(Message(msg))
         pass
 
@@ -55,9 +55,8 @@ class Attachments:
 
 
 class MessengerAPI:
-    __messengerAPI = {'vk': [], 'telegram': []}
-
     def __init__(self, authTokens):
+        self.__messengerAPI = {'vk': [], 'telegram': []}
         self.__createmessengerClasses(authTokens)
         pass
 
@@ -65,6 +64,7 @@ class MessengerAPI:
         dialogs = []
         for api in self.__messengerAPI:
             for mess in self.__messengerAPI[api]:
+                dialogs.append({'name': mess.getName(), 'icon': mess.getPathIcon()})
                 for dialog in mess.getMyDialogs():
                     dialogs.append(Dialog(dialog))
         return dialogs

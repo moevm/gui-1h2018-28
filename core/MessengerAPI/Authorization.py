@@ -25,29 +25,18 @@ class VKAuth(Qt.QDialog):
         self.resize(400, 400)
 
 
-class TelegramAuth(Qt.QDialog):
-    def __init__(self, window, phoneSetHander):
+class EnterDialog(Qt.QDialog):
+    def __init__(self, window, hander,labelText,buttonText):
         super().__init__(window)
         layout = Qt.QVBoxLayout(self)
-        layout.addWidget(QLabel("Telephone number:"))
+        layout.addWidget(QLabel(labelText))
         self.lineEdit = QLineEdit()
-        btn = QPushButton("Set telephone")
-        btn.clicked.connect(phoneSetHander)
+        btn = QPushButton(buttonText)
+        btn.clicked.connect(hander)
         layout.addWidget(self.lineEdit)
         layout.addWidget(btn)
 
 
-class TelegramCheckCode(Qt.QDialog):
-    def __init__(self, window, phone, codeSetHander):
-        super().__init__(window)
-        layout = Qt.QVBoxLayout(self)
-        layout.addWidget(QLabel(str(phone)))
-        layout.addWidget(QLabel("Enter code:"))
-        self.lineEdit = QLineEdit()
-        btn = QPushButton("Set telephone")
-        btn.clicked.connect(codeSetHander)
-        layout.addWidget(self.lineEdit)
-        layout.addWidget(btn)
 
 class Authorization:
     # Here will be the instance stored.
@@ -96,20 +85,32 @@ class Authorization:
                                              TelegramApi.api_hash)
         self.__telegaClient.connect()
         self.__telegaClient.send_code_request(self.userTel)
-        self.__loginDialog = TelegramCheckCode(self.__window, self.userTel, self.codeSetHandler)
+        self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler,str(self.userTel) + "\nEnter code:","Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 
+    def loginThrowVKGroup(self):
+        self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
+        self.__loginDialog.show()
+        self.__loginDialog.exec_()
+        print("loginThrowVKGroup")
+        pass
+
+    def groupApiKey(self):
+        self.__privateKeys['vk'].append(self.__loginDialog.lineEdit.text())
+        self.saveKeys()
+        self.__loginDialog.close()
+        pass
+
     def codeSetHandler(self):
-        print(self.__loginDialog.lineEdit.text())
         self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
         self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
         self.saveKeys()
-        self.__loginDialog.exec_()
+        self.__loginDialog.close()
         # todo: check error, and save user phone
 
     def authorizationTelegram(self):
-        self.__loginDialog = TelegramAuth(self.__window, self.setTelephone)
+        self.__loginDialog = EnterDialog(self.__window, self.setTelephone,"Entter phone","Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 
