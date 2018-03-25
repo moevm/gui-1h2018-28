@@ -64,9 +64,12 @@ class MessengerAPI:
         dialogs = []
         for api in self.__messengerAPI:
             for mess in self.__messengerAPI[api]:
-                dialogs.append({'name': mess.getName(), 'icon': mess.getPathIcon()})
-                for dialog in mess.getMyDialogs():
-                    dialogs.append(Dialog(dialog))
+                dial = mess.getMyDialogs()
+                dialogs.append(
+                    {'name': mess.getName(), 'visibility': True, 'size': len(dial) + 1, 'icon': mess.getPathIcon(),
+                     'dialogs': []})
+                for dialog in dial:
+                    dialogs[-1]['dialogs'].append(Dialog(dialog))
         return dialogs
 
     def __createmessengerClasses(self, authTokens):
