@@ -10,7 +10,6 @@ from UIInit import UIInit
 class Manager:
     __authorization = Authorization.getInstance()
     __messenger = None
-    __messenger = None
     __ui = None
 
     def __init__(self):
@@ -69,7 +68,6 @@ class Manager:
         self.__ui.clearDialogs()
         self.loadDialogs()
 
-
     def loadUserDialog(self, user):
         print(user.row())
         row = user.row()
@@ -78,13 +76,13 @@ class Manager:
             if self.__messenger[curr]['visibility'] is True:
                 row -= self.__messenger[curr]['size']
             else:
-                row-=1
+                row -= 1
             curr += 1
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
             self.__ui.clearMessageLayout()
-            for message in self.__messenger[curr]['dialogs'][row-1].getMessages():
+            for message in self.__messenger[curr]['dialogs'][row - 1].getMessages():
                 self.__ui.addMessageToLayout(message.getText(), message.isMyMessage())
         print("----")
         pass

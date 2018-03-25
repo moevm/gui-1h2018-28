@@ -1,7 +1,7 @@
 import telethon
 from telethon import TelegramClient
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
-
+from telethon.utils import get_display_name
 
 class TelegramApi:
     api_id = 223447
@@ -10,13 +10,19 @@ class TelegramApi:
     def __init__(self, pathToSession):
         self.client = TelegramClient(pathToSession, self.api_id, self.api_hash)
         print(self.client.connect())
+        self.__userIcon = self.client.download_profile_photo(self.client.get_me().photo,file='./images/'+pathToSession+'userImage.jpg')
+        self.__name = get_display_name(self.client.get_me())
+        print(self.client.get_me().photo.photo_small.__dict__)
         pass
 
     def getName(self):
-        return "telegram testName"
+        return str(self.__name)
 
     def getPathIcon(self):
-        return '../resources/telegram_logo.png'
+        if self.__userIcon is None:
+            return '../resources/telegram_logo.png'
+        else:
+            return self.__userIcon
 
     def getDialog(self, user):
         pass
@@ -24,7 +30,6 @@ class TelegramApi:
     def getMessagesByChat(self, chatId, offset):
         print(chatId)
         return []
-
 
     def getMessagesById(self, userId, offset):
         """
@@ -78,7 +83,6 @@ class TelegramApi:
             print("---------- END -----------")
             return type(msg).__name__
 
-
     def getUserById(self, user_ids):
         return []
 
@@ -97,11 +101,11 @@ class TelegramApi:
         """
         dialogs = []
         for dialog in self.client.get_dialogs(limit=10):
-            print(dialog.entity.__dict__)
+            #print(dialog.entity.__dict__)
             if isinstance(dialog.entity, telethon.tl.types.User):
                 dialogs.append({
                     "dialog_id": dialog.dialog.peer.user_id,
-                    "dialog_title": str(dialog.entity.first_name) +' '+ str(dialog.entity.last_name),
+                    "dialog_title": get_display_name(dialog.entity),
                     "last_message": "last message",
                     "getMessages": self.getMessagesByUserId
                 })
