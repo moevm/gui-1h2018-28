@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtWidgets import *
 
 from MessengerAPI.Authorization import Authorization
-from MessengerAPI.MessengerAPI import MessengerAPI, Dialog
+from MessengerAPI.MessengerAPI import MessengerAPI
 from UIInit import UIInit
 
 
@@ -83,7 +83,7 @@ class Manager:
         else:
             self.__ui.clearMessageLayout()
             for message in self.__messenger[curr]['dialogs'][row - 1].getMessages():
-                self.__ui.addMessageToLayout(message.getText(), message.isMyMessage())
+                self.__ui.addMessageToLayout(message)
         print("----")
         pass
 

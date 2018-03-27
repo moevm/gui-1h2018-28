@@ -3,6 +3,57 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
+class messageWiget(QWidget):
+    def __init__(self, message):
+        super(messageWiget, self).__init__(None)
+        self.row = QHBoxLayout()
+        self.row.setSpacing(0)
+        if message.isMyMessage():
+            self.row.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
+            self.addMessageLayout(message, True)
+            self.addLittleTriangle(self.row, True)
+        else:
+            self.addLittleTriangle(self.row, False)
+            self.addMessageLayout(message, False)
+            self.row.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
+
+        self.setLayout(self.row)
+
+    def addMessageLayout(self, message, rightSide):
+        backgroundColor = QWidget()
+        if rightSide:
+            backgroundColor.setStyleSheet("background-color: #59f296;"
+                                          " border-top-left-radius: 15px;"
+                                          " border-top-right-radius: 15px;"
+                                          " border-bottom-left-radius: 15px;")
+        else:
+            backgroundColor.setStyleSheet("background-color: #59f296;"
+                                          " border-top-left-radius: 15px;"
+                                          " border-top-right-radius: 15px;"
+                                          " border-bottom-right-radius: 15px;")
+        messageLayout = QVBoxLayout(backgroundColor)
+        label = QLabel(message.getText())
+        label.setWordWrap(True)
+        label.setStyleSheet("background-color: transparent;")
+        label.setScaledContents(True)
+        messageLayout.addWidget(label)
+        self.row.addWidget(backgroundColor)
+
+    @staticmethod
+    def addLittleTriangle(lay, rightSide):
+        row = QVBoxLayout()
+        row.addItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        icon = QLabel()
+        if rightSide:
+            icon.setPixmap(QPixmap("../resources/rightTriangle.png"))
+        else:
+            icon.setPixmap(QPixmap("../resources/leftTriangle.png"))
+
+        icon.setStyleSheet("background-color: transparent;")
+        row.addWidget(icon)
+        lay.addLayout(row)
+
+
 class MyCustomWidget(QWidget):
     def __init__(self, name, logo, parent=None):
         super(MyCustomWidget, self).__init__(parent)
@@ -22,9 +73,9 @@ class MessengerWidget(QWidget):
         super(MessengerWidget, self).__init__(parent)
         self.row = QHBoxLayout()
         sctickersButton = QPushButton()
-        sctickersButton.setIconSize(QSize(35, 35))
+        sctickersButton.setIconSize(QSize(50, 50))
         sctickersButton.setStyleSheet("background-color: transparent;")
-        rect = QRect(5, 5, 35, 35)
+        rect = QRect(6, 6, 47, 47)
         region = QRegion(rect, QRegion.Ellipse)
         sctickersButton.setMask(region)
         sctickersButton.setIcon(logo)
@@ -119,9 +170,14 @@ class UIInit(QMainWindow):
         # layout.setItemWidget(itemN, widget)
 
     def addMessengerToLayout(self, info):
+        '''
+        Adding user profile in messenger to layout
+        :param info:
+        :return:
+        '''
         itemN = QListWidgetItem()
         self.dialogList.addItem(itemN)
-        row = MessengerWidget(info['name'],QIcon(info['icon']))
+        row = MessengerWidget(info['name'], QIcon(info['icon']))
         itemN.setSizeHint(row.minimumSizeHint())
         self.dialogList.setItemWidget(itemN, row)
 
@@ -174,32 +230,17 @@ class UIInit(QMainWindow):
                                     min-height: 20px;
                                 }""")
         # widgetList.setFlow(Qt.AlignBottom)
+        self.messageList.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.messageList.verticalScrollBar().setSingleStep(5)
         rightMessageHistory.addWidget(self.messageList)
         layout.addWidget(bcgColor2)
 
-    def addMessageToLayout(self, message, sideMessage):
-        """
-            sideMessage
-                True - my message
-                False - message from friend
-        """
-        helpWidget = QWidget()
-        msg = QGridLayout(helpWidget)
-        msg.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding))
-
-        msgButton = QPushButton(message)
-        msgButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        msg.addWidget(msgButton, 0, 0, Qt.AlignRight)
-        if sideMessage:
-            msg.addWidget(msgButton, 0, 0, Qt.AlignRight)
-        else:
-            msg.addWidget(msgButton, 0, 0, Qt.AlignLeft)
-
+    def addMessageToLayout(self, message):
         itemN = QListWidgetItem()
-        itemN.setSizeHint(QSize(0, 50))
         self.messageList.insertItem(0, itemN)
-        self.messageList.setItemWidget(itemN, helpWidget)
+        widget = messageWiget(message)
+        itemN.setSizeHint(widget.sizeHint())
+        self.messageList.setItemWidget(itemN, widget)
 
     def addUserSubMenu(self, layout):
         backgroundColor = QWidget()

@@ -58,9 +58,10 @@ class TelegramApi:
 
     def getMsgsByPeer(self, peer):
         msgs = self.client.get_message_history(self.client.get_entity(peer))
-        return [{"text": self.parseMessage(x), "my_message": True, "from_id": 1} for x in msgs]
+        return [{"text": self.parseMessage(x), "my_message": x.out, "from_id": 1} for x in msgs]
 
     def parseMessage(self, msg):
+        print(msg)
         if getattr(msg, 'media', None):
             print("---------- MEDIA -----------")
             print(msg.media.__dict__)
