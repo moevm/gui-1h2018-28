@@ -7,15 +7,22 @@ class VKApi:
     def __init__(self, authToken):
         self.vk_session = vk_api.VkApi(token=authToken)
         self.vkApi = self.vk_session.get_api()
-        userName = self.vkApi.users.get()
+        userName = self.vkApi.users.get(fields='photo_50')
         if len(userName) is 0:
-            self.__myId = self.vkApi.groups.getById()[0]['id']
+            group = self.vkApi.groups.getById()
+            self.__myId = group[0]['id']
+            self.__userIcon = group[0]['photo_50']
+            self.__userName = group[0]['name']
+            print(group)
         else:
             self.__myId = userName[0]['id']
+            self.__userIcon = userName[0]['photo_50']
+            self.__userName = userName[0]['first_name'] + ' ' + userName[0]['last_name']
+            print(userName)
         pass
 
     def getName(self):
-        return "vk testName"
+        return self.__userName
 
     def getPathIcon(self):
         return '../resources/vk_logo.png'
@@ -24,9 +31,7 @@ class VKApi:
         pass
 
     def getMessagesByChat(self, chatId, offset):
-        print(chatId)
         msg = self.getMessagesById("20000000" + str(chatId), offset)
-        print(msg)
         return msg
 
 
@@ -41,7 +46,6 @@ class VKApi:
         """
         messages = self.vkApi.messages.getHistory(user_id=userId, offset=offset)['items']
         msgToReturn = []
-        print(self.vkApi.messages.getHistory(user_id=userId, offset=offset))
         for msg in messages:
             msgToReturn.append({'text': msg['body'],
                                 'from_id': str(msg['from_id']), 'my_message': msg['out'] == 1})
@@ -70,7 +74,6 @@ class VKApi:
         itemsToReturn = []
         for dialog in dialogs['items']:
             if 'chat_id' in dialog['message']:
-                print(dialog)
                 itemsToReturn.append(
                     {"dialog_id": dialog['message']['chat_id'], "getMessages": self.getMessagesByChat,
                      "dialog_title": dialog['message']['title']})
