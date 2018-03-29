@@ -60,7 +60,7 @@ class Manager:
             self.__ui.addMessengerToLayout(messenger)
             if messenger['visibility'] is True:
                 for dialog in messenger['dialogs']:
-                    self.__ui.addDialogToLayout(dialog.getTitle())
+                    self.__ui.addDialogToLayout(dialog)
         pass
 
     def messengerSetHide(self, num, status):

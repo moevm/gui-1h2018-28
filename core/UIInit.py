@@ -55,21 +55,27 @@ class messageWiget(QWidget):
 
 
 class MyCustomWidget(QWidget):
-    def __init__(self, name, logo, parent=None):
+    def __init__(self, name, lastMessage, logo, parent=None):
         super(MyCustomWidget, self).__init__(parent)
         self.row = QHBoxLayout()
+        rect = QRect(2, 2, 33, 33)
+        region = QRegion(rect, QRegion.Ellipse)
         sctickersButton = QPushButton()
         sctickersButton.setIconSize(QSize(35, 35))
-        sctickersButton.setStyleSheet("background-color: white;border-radius: 17px;")
+        sctickersButton.setMask(region)
         sctickersButton.setIcon(logo)
+        sctickersButton.setStyleSheet("background-color: white;border-radius: 17px;")
         self.row.addWidget(sctickersButton)
-        self.row.addWidget(QLabel(name))
+        lay = QVBoxLayout()
+        lay.addWidget(QLabel(name if len(name) < 15 else name[0:15] + '...'))
+        lay.addWidget(QLabel(lastMessage if len(lastMessage) < 15 else lastMessage[0:15] + '...'))
+        self.row.addLayout(lay)
         self.row.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
         self.setLayout(self.row)
 
 
 class MessengerWidget(QWidget):
-    def __init__(self, name, logo, parent=None):
+    def __init__(self, name, logo, msgLogo, parent=None):
         super(MessengerWidget, self).__init__(parent)
         self.row = QHBoxLayout()
         sctickersButton = QPushButton()
@@ -80,7 +86,9 @@ class MessengerWidget(QWidget):
         sctickersButton.setMask(region)
         sctickersButton.setIcon(logo)
         self.row.addWidget(sctickersButton)
-        self.row.addWidget(QLabel(name))
+        nameLabel = QLabel(name)
+        self.row.addWidget(nameLabel)
+
         self.row.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
         downButton = QPushButton()
         downButton.setIconSize(QSize(35, 35))
@@ -88,6 +96,13 @@ class MessengerWidget(QWidget):
         downButton.setIcon(QIcon('../resources/down_arrow.png'))
         self.row.addWidget(downButton)
         self.setLayout(self.row)
+
+        messengerBtn = QPushButton(self)
+        messengerBtn.setIconSize(QSize(20, 20))
+        messengerBtn.setIcon(QIcon(msgLogo))
+        messengerBtn.setStyleSheet("background-color: transparent;")
+        messengerBtn.move(10, 40)
+        messengerBtn.show()
 
 
 class UIInit(QMainWindow):
@@ -159,11 +174,11 @@ class UIInit(QMainWindow):
     def clearDialogs(self):
         self.dialogList.clear()
 
-    def addDialogToLayout(self, text):
+    def addDialogToLayout(self, dialog):
         itemN = QListWidgetItem()
         # itemN.setSizeHint(QSize(100, 100))
         self.dialogList.addItem(itemN)
-        row = MyCustomWidget(text, QIcon('../resources/testProfileLogo.png'))
+        row = MyCustomWidget(dialog.getTitle(), dialog.getLastMessage(), QIcon(dialog.getIcon()))
         itemN.setSizeHint(row.minimumSizeHint())
         # Associate the custom widget to the list entry
         self.dialogList.setItemWidget(itemN, row)
@@ -177,7 +192,7 @@ class UIInit(QMainWindow):
         '''
         itemN = QListWidgetItem()
         self.dialogList.addItem(itemN)
-        row = MessengerWidget(info['name'], QIcon(info['icon']))
+        row = MessengerWidget(info['name'], QIcon(info['icon']), info['messenger_icon'])
         itemN.setSizeHint(row.minimumSizeHint())
         self.dialogList.setItemWidget(itemN, row)
 

@@ -3,6 +3,7 @@ from telethon import TelegramClient
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 from telethon.utils import get_display_name
 
+
 class TelegramApi:
     api_id = 223447
     api_hash = '1827d8b0aa6334c8efc32f941d3559dc'
@@ -10,9 +11,9 @@ class TelegramApi:
     def __init__(self, pathToSession):
         self.client = TelegramClient(pathToSession, self.api_id, self.api_hash)
         print(self.client.connect())
-        self.__userIcon = self.client.download_profile_photo(self.client.get_me().photo,file='./images/'+pathToSession+'userImage.jpg')
+        self.__userIcon = self.client.download_profile_photo(self.client.get_me().photo,
+                                                             file='./images/telegramAPI/' + pathToSession + 'userImage.jpg')
         self.__name = get_display_name(self.client.get_me())
-        print(self.client.get_me().photo.photo_small.__dict__)
         pass
 
     def getName(self):
@@ -102,11 +103,17 @@ class TelegramApi:
         """
         dialogs = []
         for dialog in self.client.get_dialogs(limit=10):
-            #print(dialog.entity.__dict__)
+            if dialog.entity.photo != None:
+                print(dialog.entity.photo.__dict__)
             if isinstance(dialog.entity, telethon.tl.types.User):
                 dialogs.append({
                     "dialog_id": dialog.dialog.peer.user_id,
+                    "message": self.parseMessage(dialog.message),
                     "dialog_title": get_display_name(dialog.entity),
+                    "dialog_photo": "../resources/testProfileLogo.png" if dialog.entity.photo is None else
+                    self.client.download_profile_photo(dialog.entity.photo,
+                                                       file='./images/telegramAPI/img' + str(
+                                                           dialog.dialog.peer.user_id) + '.jpg'),
                     "last_message": "last message",
                     "getMessages": self.getMessagesByUserId
                 })
@@ -114,18 +121,31 @@ class TelegramApi:
                 if isinstance(dialog.entity, telethon.tl.types.Channel):
                     dialogs.append({
                         "dialog_id": dialog.dialog.peer.channel_id,
+                        "message": self.parseMessage(dialog.message),
                         "dialog_title": dialog.entity.title,
+                        "dialog_photo": "../resources/testProfileLogo.png" if dialog.entity.photo is None else
+                        self.client.download_profile_photo(dialog.entity.photo,
+                                                           file='./images/telegramAPI/img' + str(
+                                                               dialog.dialog.peer.channel_id) + '.jpg'),
                         "last_message": "last message",
                         "getMessages": self.getMessagesByChannelId
                     })
                 else:
                     dialogs.append({
                         "dialog_id": dialog.dialog.peer.chat_id,
+                        "message": self.parseMessage(dialog.message),
                         "dialog_title": dialog.entity.title,
                         "last_message": "last message",
+                        "dialog_photo": "../resources/testProfileLogo.png" if dialog.entity.photo is None else
+                        self.client.download_profile_photo(dialog.entity.photo,
+                                                           file='./images/telegramAPI/img' + str(
+                                                               dialog.dialog.peer.chat_id) + '.jpg'),
                         "getMessages": self.getMessagesByChatId
                     })
         return dialogs
+
+    def getMessengerIcon(self):
+        return '../resources/telegram_logo.png'
 
     def userInfo(self, user):
         pass

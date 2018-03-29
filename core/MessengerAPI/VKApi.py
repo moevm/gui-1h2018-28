@@ -1,3 +1,6 @@
+import os
+from urllib import request
+
 import vk_api
 
 
@@ -8,24 +11,34 @@ class VKApi:
         self.vk_session = vk_api.VkApi(token=authToken)
         self.vkApi = self.vk_session.get_api()
         userName = self.vkApi.users.get(fields='photo_50')
+        self.__userIcon = '../resources/testProfileLogo.png'
         if len(userName) is 0:
             group = self.vkApi.groups.getById()
             self.__myId = group[0]['id']
-            self.__userIcon = group[0]['photo_50']
+            self.__userIcon = self.downloadImage(group[0]['photo_50'])
             self.__userName = group[0]['name']
             print(group)
         else:
             self.__myId = userName[0]['id']
-            self.__userIcon = userName[0]['photo_50']
+            self.__userIcon = self.downloadImage(userName[0]['photo_50'])
             self.__userName = userName[0]['first_name'] + ' ' + userName[0]['last_name']
             print(userName)
+        pass
+
+    def downloadImage(self, url):
+        saveDir = './images/vkAPI/' + url[11:].replace('/', '.')
+        if os.path.exists(saveDir):
+            return saveDir
+        else:
+            request.urlretrieve(url, saveDir)
+            return saveDir
         pass
 
     def getName(self):
         return self.__userName
 
     def getPathIcon(self):
-        return '../resources/vk_logo.png'
+        return self.__userIcon
 
     def getDialog(self, user):
         pass
@@ -33,8 +46,6 @@ class VKApi:
     def getMessagesByChat(self, chatId, offset):
         msg = self.getMessagesById("20000000" + str(chatId), offset)
         return msg
-
-
 
     def getMessagesById(self, userId, offset):
         """
@@ -53,10 +64,10 @@ class VKApi:
         return msgToReturn
 
     def getUserById(self, user_ids):
-        return self.vkApi.users.get(user_ids=','.join(user_ids))
+        return self.vkApi.users.get(user_ids=','.join(user_ids), fields='photo_50')
 
     def getGroupById(self, group_ids):
-        return self.vkApi.groups.getById(group_ids=','.join(group_ids))
+        return self.vkApi.groups.getById(group_ids=','.join(group_ids), fields='photo_50')
 
     def getMyDialogs(self):
         """
@@ -75,10 +86,15 @@ class VKApi:
         for dialog in dialogs['items']:
             if 'chat_id' in dialog['message']:
                 itemsToReturn.append(
-                    {"dialog_id": dialog['message']['chat_id'], "getMessages": self.getMessagesByChat,
-                     "dialog_title": dialog['message']['title']})
+                    {"dialog_id": dialog['message']['chat_id'],
+                     "message": dialog['message']['body'],
+                     "dialog_photo": self.downloadImage(dialog['message']['photo_50'])
+                     if 'photo_50' in dialog['message'] else '../resources/testProfileLogo.png',
+                     "getMessages": self.getMessagesByChat, "dialog_title": dialog['message']['title']})
             else:
                 itemsToReturn.append({"dialog_id": dialog['message']['user_id'], "getMessages": self.getMessagesById,
+                                      "message": dialog['message']['body'],
+                                      "dialog_photo": '../resources/testProfileLogo.png',
                                       "dialog_title": "Unknown"})
                 userHelpId = str(dialog['message']['user_id'])
                 if userHelpId[0:1] != '-':
@@ -94,13 +110,18 @@ class VKApi:
                 if userInfo[numUser]['id'] == dialog['message']['user_id']:
                     itemsToReturn[n]['dialog_title'] = userInfo[numUser]['first_name'] + ' ' + userInfo[numUser][
                         'last_name']
+                    itemsToReturn[n]['dialog_photo'] = self.downloadImage(userInfo[numUser]['photo_50'])
                     numUser += 1
             if len(groupInfo) > numGroup:
                 if str(groupInfo[numGroup]['id']) == str(dialog['message']['user_id'])[1:]:
                     itemsToReturn[n]['dialog_title'] = groupInfo[numGroup]['name']
+                    itemsToReturn[n]['dialog_photo'] = self.downloadImage(groupInfo[numGroup]['photo_50'])
                     numGroup += 1
 
         return itemsToReturn
+
+    def getMessengerIcon(self):
+        return '../resources/vk_logo.png'
 
     def userInfo(self, user):
         pass

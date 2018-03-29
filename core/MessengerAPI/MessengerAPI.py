@@ -9,10 +9,15 @@ class Dialog:
 
     def __init__(self, dialog):
         self.__messages = []
+        self.__lastMessage = dialog['message']
+        self.__iconPath = dialog['dialog_photo']
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
         self.__dialogId = str(dialog['dialog_id'])
         pass
+
+    def getLastMessage(self):
+        return self.__lastMessage
 
     def getTitle(self):
         return self.__title
@@ -23,8 +28,12 @@ class Dialog:
         pass
 
     def getMessages(self):
+        # self.__messages.clear()
         self.loadMessages(len(self.__messages))
         return self.__messages
+
+    def getIcon(self):
+        return self.__iconPath
 
 
 class Message:
@@ -66,7 +75,8 @@ class MessengerAPI:
             for mess in self.__messengerAPI[api]:
                 dial = mess.getMyDialogs()
                 dialogs.append(
-                    {'name': mess.getName(), 'visibility': True, 'size': len(dial) + 1, 'icon': mess.getPathIcon(),
+                    {'name': mess.getName(), 'messenger_icon': mess.getMessengerIcon(), 'visibility': True,
+                     'size': len(dial) + 1, 'icon': mess.getPathIcon(),
                      'dialogs': []})
                 for dialog in dial:
                     dialogs[-1]['dialogs'].append(Dialog(dialog))
