@@ -1,14 +1,13 @@
-import sys
 import os.path
-
-from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5 import Qt
-import json
 import pickle
-from MessengerAPI.VKApi import VKApi
-from MessengerAPI.MessengerAPI import MessengerAPI
+
+from PyQt5 import Qt
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton
+from telethon import TelegramClient
+
+from MessengerAPI.TelegramApi import TelegramApi
 
 
 class VKAuth(Qt.QDialog):
@@ -20,18 +19,35 @@ class VKAuth(Qt.QDialog):
         wv.page().profile().cookieStore().deleteAllCookies()
         wv.urlChanged.connect(authHandler)
         wv.load(QUrl(
-            "https://oauth.vk.com/authorize?client_id=6374130&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends,messages,offline&response_type=token&v=5.73"))
+            "https://oauth.vk.com/authorize?client_id=6374130&display=page&redirect_uri=https://oauth.vk.com/"
+            "blank.html&scope=friends,messages,offline&response_type=token&v=5.73"))
         layout.addWidget(wv)
         self.resize(400, 400)
+
+
+class EnterDialog(Qt.QDialog):
+    def __init__(self, window, hander,labelText,buttonText):
+        super().__init__(window)
+        layout = Qt.QVBoxLayout(self)
+        layout.addWidget(QLabel(labelText))
+        self.lineEdit = QLineEdit()
+        btn = QPushButton(buttonText)
+        btn.clicked.connect(hander)
+        layout.addWidget(self.lineEdit)
+        layout.addWidget(btn)
+
 
 
 class Authorization:
     # Here will be the instance stored.
     __instance = None
-    # Here will be the private keys stored.
+    # Here will be the private keys VK stored and telegram : telethon clients
     __privateKeys = {"vk": [], "telegram": []}
     # Dialog with login form
     __loginDialog = None
+    # widget main window
+    __window = None
+
 
     @staticmethod
     def getInstance():
@@ -54,18 +70,57 @@ class Authorization:
         else:
             self.saveKeys()
 
+    def setWidget(self, widget):
+        self.__window = widget
+
     def getPrivateKeys(self):
         return self.__privateKeys
 
+    def setTelephone(self):
+        self.userTel = self.__loginDialog.lineEdit.text()
+        print(self.userTel)
+        self.__loginDialog.close()
+        print(TelegramApi.api_id, TelegramApi.api_hash)
+        self.__telegaClient = TelegramClient('telegram.' + self.userTel + '.session', TelegramApi.api_id,
+                                             TelegramApi.api_hash)
+        self.__telegaClient.connect()
+        self.__telegaClient.send_code_request(self.userTel)
+        self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler,str(self.userTel) + "\nEnter code:","Ok")
+        self.__loginDialog.show()
+        self.__loginDialog.exec_()
 
+    def loginThrowVKGroup(self):
+        self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
+        self.__loginDialog.show()
+        self.__loginDialog.exec_()
+        print("loginThrowVKGroup")
+        pass
+
+    def groupApiKey(self):
+        self.__privateKeys['vk'].append(self.__loginDialog.lineEdit.text())
+        self.saveKeys()
+        self.__loginDialog.close()
+        pass
+
+    def codeSetHandler(self):
+        self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
+        self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
+        self.saveKeys()
+        self.__loginDialog.close()
+        # todo: check error, and save user phone
+
+    def authorizationTelegram(self):
+        self.__loginDialog = EnterDialog(self.__window, self.setTelephone,"Entter phone","Ok")
+        self.__loginDialog.show()
+        self.__loginDialog.exec_()
 
     def saveKeys(self):
         with open("privateKeys.pickle", "wb") as f:
             pickle.dump(self.__privateKeys, f)
         pass
 
-    def authorizationVK(self, parent):
-        self.__loginDialog = VKAuth(parent, self.vkUrlChangeHandler)
+    def authorizationVK(self):
+        self.__loginDialog = VKAuth(self.__window, self.vkUrlChangeHandler)
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 

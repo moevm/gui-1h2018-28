@@ -1,3 +1,4 @@
+from MessengerAPI.TelegramApi import TelegramApi
 from MessengerAPI.VKApi import VKApi
 
 
@@ -7,23 +8,32 @@ class Dialog:
     __api = None
 
     def __init__(self, dialog):
-        self.__messages=[]
+        self.__messages = []
+        self.__lastMessage = dialog['message']
+        self.__iconPath = dialog['dialog_photo']
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
         self.__dialogId = str(dialog['dialog_id'])
         pass
 
+    def getLastMessage(self):
+        return self.__lastMessage
+
     def getTitle(self):
         return self.__title
 
     def loadMessages(self, offset):
-        for msg in self.__getMess(self.__dialogId,offset):
+        for msg in self.__getMess(self.__dialogId, offset):
             self.__messages.append(Message(msg))
         pass
 
     def getMessages(self):
+        # self.__messages.clear()
         self.loadMessages(len(self.__messages))
         return self.__messages
+
+    def getIcon(self):
+        return self.__iconPath
 
 
 class Message:
@@ -54,19 +64,22 @@ class Attachments:
 
 
 class MessengerAPI:
-    __messengerAPI = {'vk': [], 'telegram': []}
-
     def __init__(self, authTokens):
+        self.__messengerAPI = {'vk': [], 'telegram': []}
         self.__createmessengerClasses(authTokens)
         pass
 
     def loadDialogs(self):
         dialogs = []
-
         for api in self.__messengerAPI:
             for mess in self.__messengerAPI[api]:
-                for dialog in mess.getMyDialogs():
-                    dialogs.append(Dialog(dialog))
+                dial = mess.getMyDialogs()
+                dialogs.append(
+                    {'name': mess.getName(), 'messenger_icon': mess.getMessengerIcon(), 'visibility': True,
+                     'size': len(dial) + 1, 'icon': mess.getPathIcon(),
+                     'dialogs': []})
+                for dialog in dial:
+                    dialogs[-1]['dialogs'].append(Dialog(dialog))
         return dialogs
 
     def __createmessengerClasses(self, authTokens):
@@ -74,6 +87,8 @@ class MessengerAPI:
             for key in authTokens[mess]:
                 if mess == "vk":
                     self.__messengerAPI['vk'].append(VKApi(key))
+                if mess == "telegram":
+                    self.__messengerAPI['telegram'].append(TelegramApi(key))
 
     def userInfo(self, user):
         pass
