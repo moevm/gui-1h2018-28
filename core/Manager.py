@@ -84,6 +84,7 @@ class Manager:
             self.__ui.clearMessageLayout()
             for message in self.__messenger[curr]['dialogs'][row - 1].getMessages():
                 self.__ui.addMessageToLayout(message)
+            self.__ui.showFirstMessage()
         print("----")
         pass
 

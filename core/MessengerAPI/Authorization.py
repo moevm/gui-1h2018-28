@@ -26,7 +26,7 @@ class VKAuth(Qt.QDialog):
 
 
 class EnterDialog(Qt.QDialog):
-    def __init__(self, window, hander,labelText,buttonText):
+    def __init__(self, window, hander, labelText, buttonText):
         super().__init__(window)
         layout = Qt.QVBoxLayout(self)
         layout.addWidget(QLabel(labelText))
@@ -35,7 +35,6 @@ class EnterDialog(Qt.QDialog):
         btn.clicked.connect(hander)
         layout.addWidget(self.lineEdit)
         layout.addWidget(btn)
-
 
 
 class Authorization:
@@ -47,7 +46,6 @@ class Authorization:
     __loginDialog = None
     # widget main window
     __window = None
-
 
     @staticmethod
     def getInstance():
@@ -67,6 +65,8 @@ class Authorization:
             with open("privateKeys.pickle", "rb") as f:
                 self.__privateKeys = pickle.load(f)
                 print(self.__privateKeys)
+            self.__privateKeys["telegram"] = []
+            self.saveKeys()
         else:
             self.saveKeys()
 
@@ -85,7 +85,7 @@ class Authorization:
                                              TelegramApi.api_hash)
         self.__telegaClient.connect()
         self.__telegaClient.send_code_request(self.userTel)
-        self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler,str(self.userTel) + "\nEnter code:","Ok")
+        self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler, str(self.userTel) + "\nEnter code:", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 
@@ -110,7 +110,7 @@ class Authorization:
         # todo: check error, and save user phone
 
     def authorizationTelegram(self):
-        self.__loginDialog = EnterDialog(self.__window, self.setTelephone,"Entter phone","Ok")
+        self.__loginDialog = EnterDialog(self.__window, self.setTelephone, "Entter phone", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 

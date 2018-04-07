@@ -257,6 +257,9 @@ class UIInit(QMainWindow):
         itemN.setSizeHint(widget.sizeHint())
         self.messageList.setItemWidget(itemN, widget)
 
+    def showFirstMessage(self):
+        self.messageList.scrollToBottom()
+
     def addUserSubMenu(self, layout):
         backgroundColor = QWidget()
         backgroundColor.setStyleSheet("background-color: #e3dcd6")
