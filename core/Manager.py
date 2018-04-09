@@ -1,29 +1,30 @@
 import sys
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import pyqtSlot as Slot, QObject
 
+import Handlers
 from MessengerAPI.Authorization import Authorization
 from MessengerAPI.MessengerAPI import MessengerAPI
 from UIInit import UIInit
 
 
-class Manager:
+class Manager(QObject):
     __authorization = Authorization.getInstance()
     __messenger = None
     __ui = None
 
     def __init__(self):
-        try:
-            app = QApplication(sys.argv)
-            self.__ui = UIInit(self)
-            self.__authorization.setWidget(self.__ui)
-            self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
-            self.__messenger = self.__messenger.loadDialogs()
-            self.loadDialogs()
-            sys.exit(app.exec_())
-        except BaseException as e:
-            print(e)
-            raise e
+        super().__init__()
+        app = QApplication(sys.argv)
+        # Handlers connect
+        Handlers.loadUserDialogHandler.connect(self.loadUserDialogHandler)
+        self.__ui = UIInit(self)
+        self.__authorization.setWidget(self.__ui)
+        self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
+        self.__messenger = self.__messenger.loadDialogs()
+        self.loadDialogs()
+        sys.exit(app.exec_())
 
     def __reloadDialogs(self):
         self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
@@ -68,6 +69,13 @@ class Manager:
         self.__ui.clearDialogs()
         self.loadDialogs()
 
+    @Slot(dict, name="loadUserDialogHandler")
+    def loadUserDialogHandler(self, messages):
+        self.__ui.clearMessageLayout()
+        for message in messages:
+            self.__ui.addMessageToLayout(message)
+        self.__ui.showFirstMessage()
+
     def loadUserDialog(self, user):
         print(user.row())
         row = user.row()
@@ -81,10 +89,7 @@ class Manager:
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
-            self.__ui.clearMessageLayout()
-            for message in self.__messenger[curr]['dialogs'][row - 1].getMessages():
-                self.__ui.addMessageToLayout(message)
-            self.__ui.showFirstMessage()
+            self.__messenger[curr]['dialogs'][row - 1].getMessagesSlot.emit()
         print("----")
         pass
 

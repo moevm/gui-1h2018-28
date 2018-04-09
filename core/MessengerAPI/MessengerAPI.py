@@ -1,20 +1,27 @@
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSlot as Slot
+from PyQt5.QtCore import pyqtSignal as Signal
+
+import Handlers
 from MessengerAPI.TelegramApi import TelegramApi
 from MessengerAPI.VKApi import VKApi
 
 
-class Dialog:
+class Dialog(QObject):
     __dialogId = None
     __title = None
     __api = None
 
     def __init__(self, dialog):
+        super().__init__()
+        self.getMessagesSlot = Signal()
+        self.getMessagesSlot.connect(self.getMessages)
         self.__messages = []
         self.__lastMessage = dialog['message']
         self.__iconPath = dialog['dialog_photo']
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
         self.__dialogId = str(dialog['dialog_id'])
-        pass
 
     def getLastMessage(self):
         return self.__lastMessage
@@ -27,10 +34,11 @@ class Dialog:
             self.__messages.append(Message(msg))
         pass
 
+    @Slot(name="getMessages")
     def getMessages(self):
         # self.__messages.clear()
         self.loadMessages(len(self.__messages))
-        return self.__messages
+        Handlers.loadUserDialogHandler.emit(self.__messages)
 
     def getIcon(self):
         return self.__iconPath
