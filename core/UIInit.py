@@ -140,9 +140,13 @@ class UIInit(QMainWindow):
         self.dialogList.setMaximumSize(300, 10000)
         self.MessageMenuInit()
 
-        self.loadingIndicator = QLabel()
-        # TODO loading indictor need realization
-
+        self.loadingIndicator = QLabel(self)
+        self.loadingIndicatorMovie = QMovie("../resources/loader.gif")
+        self.loadingIndicator.setMovie(self.loadingIndicatorMovie)
+        # self.loadingIndicator.adjustSize()
+        self.loadingIndicator.resize(256, 256)
+        self.loadingIndicator.move(200, 200)
+        self.stopLoadingIndicator()
         self.show()
         pass
 
@@ -200,8 +204,14 @@ class UIInit(QMainWindow):
         itemN.setSizeHint(row.minimumSizeHint())
         self.dialogList.setItemWidget(itemN, row)
 
+    def stopLoadingIndicator(self):
+        self.loadingIndicatorMovie.stop()
+        self.loadingIndicator.setVisible(False)
+        pass
+
     def startLoadIndicator(self):
-        # TODO need realization
+        self.loadingIndicatorMovie.start()
+        self.loadingIndicator.setVisible(True)
         pass
 
     def MessageMenuInit(self):

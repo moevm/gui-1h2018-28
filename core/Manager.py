@@ -33,15 +33,11 @@ class Manager(QObject):
         sys.exit(app.exec_())
 
     def __reloadDialogs(self):
+        self.__ui.startLoadIndicator()
         self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
         self.__ui.clearDialogs()
         threading.Thread(target=MessengerAPI.loadDialogs,
                          args=(self.__messenger, self.dialogsLoadedSignal)).start()
-
-    @Slot(list, name="dialogsLoadedHandler")
-    def dialogsLoadedHandler(self, mess):
-        self.__messenger = mess
-        self.loadDialogs()
 
     def OpenSettings(self):
         self.__ui.OpenSettings()
@@ -79,13 +75,6 @@ class Manager(QObject):
         self.__ui.clearDialogs()
         self.loadDialogs()
 
-    @Slot(list, name="loadUserDialogHandler")
-    def loadUserDialogHandler(self, messages):
-        self.__ui.clearMessageLayout()
-        for message in messages:
-            self.__ui.addMessageToLayout(message)
-        self.__ui.showFirstMessage()
-
     def loadUserDialog(self, user):
         print(user.row())
         row = user.row()
@@ -99,10 +88,25 @@ class Manager(QObject):
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
+            self.__ui.startLoadIndicator()
             threading.Thread(target=Dialog.getMessages,
                              args=(self.__messenger[curr]['dialogs'][row - 1], self.loadUserDialogSignal)).start()
         print("----")
         pass
+
+    @Slot(list, name="dialogsLoadedHandler")
+    def dialogsLoadedHandler(self, mess):
+        self.__messenger = mess
+        self.loadDialogs()
+        self.__ui.stopLoadingIndicator()
+
+    @Slot(list, name="loadUserDialogHandler")
+    def loadUserDialogHandler(self, messages):
+        self.__ui.clearMessageLayout()
+        for message in messages:
+            self.__ui.addMessageToLayout(message)
+        self.__ui.showFirstMessage()
+        self.__ui.stopLoadingIndicator()
 
 
 if __name__ == '__main__':
