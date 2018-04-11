@@ -85,13 +85,17 @@ class Authorization:
         print(self.userTel)
         self.__loginDialog.close()
         print(TelegramApi.api_id, TelegramApi.api_hash)
-        self.__telegaClient = TelegramClient('telegram.' + self.userTel + '.session', TelegramApi.api_id,
-                                             TelegramApi.api_hash)
-        self.__telegaClient.connect()
-        self.__telegaClient.send_code_request(self.userTel)
-        self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler, str(self.userTel) + "\nEnter code:", "Ok")
-        self.__loginDialog.show()
-        self.__loginDialog.exec_()
+        try:
+            self.__telegaClient = TelegramClient('telegram.' + self.userTel + '.session', TelegramApi.api_id,
+                                                 TelegramApi.api_hash)
+            self.__telegaClient.connect()
+            self.__telegaClient.send_code_request(self.userTel)
+            self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler, str(self.userTel) + "\nEnter code:",
+                                             "Ok")
+            self.__loginDialog.show()
+            self.__loginDialog.exec_()
+        except Exception as e:
+            print(e)
 
     def loginThrowVKGroup(self):
         self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
@@ -108,11 +112,16 @@ class Authorization:
         pass
 
     def codeSetHandler(self):
-        self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
-        self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
-        self.saveKeys()
-        self.__loginDialog.close()
-        self.__authHandler.emit()
+        try:
+            self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
+            self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
+            self.saveKeys()
+            self.__loginDialog.close()
+            self.__authHandler.emit()
+        except Exception as e:
+            print(e)
+        finally:
+            self.__loginDialog.close()
         # todo: check error, and save user phone
 
     def authorizationTelegram(self):

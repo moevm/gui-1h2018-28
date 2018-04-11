@@ -272,6 +272,7 @@ class UIInit(QMainWindow):
         # widgetList.setFlow(Qt.AlignBottom)
         self.messageList.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.messageList.verticalScrollBar().setSingleStep(5)
+        self.messageList.horizontalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
         rightMessageHistory.addWidget(self.messageList)
         layout.addWidget(bcgColor2)
 
@@ -286,12 +287,14 @@ class UIInit(QMainWindow):
         self.messageList.scrollToBottom()
 
     def addUserSubMenu(self, layout):
+        self.profileBtn = QPushButton('Profile')
+        self.iconProfile = QPushButton()
         backgroundColor = QWidget()
         backgroundColor.setStyleSheet("background-color: #e3dcd6")
         rightSubMenu = QHBoxLayout(backgroundColor)
         self.iconProfile.setIcon(QIcon('../resources/testProfileLogo.png'))
         self.iconProfile.setIconSize(QSize(35, 35))
-        self.iconProfile.setStyleSheet("background-color: white;border-radius: 17px;")
+        self.iconProfile.setStyleSheet("background-color: transparent;border-radius: 17px;")
         rightSubMenu.addWidget(self.iconProfile)
         self.profileBtn.setStyleSheet("background-color: transparent;border-radius: 20px;font-size: 10pt;")
         rightSubMenu.addWidget(self.profileBtn)
