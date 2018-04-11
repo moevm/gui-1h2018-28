@@ -88,9 +88,11 @@ class Manager(QObject):
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
+            dial = self.__messenger[curr]['dialogs'][row - 1]
             self.__ui.startLoadIndicator()
             threading.Thread(target=Dialog.getMessages,
-                             args=(self.__messenger[curr]['dialogs'][row - 1], self.loadUserDialogSignal)).start()
+                             args=(dial, self.loadUserDialogSignal)).start()
+            self.__ui.setUserToMenu(dial.getTitle(), dial.getIcon())
         print("----")
         pass
 
