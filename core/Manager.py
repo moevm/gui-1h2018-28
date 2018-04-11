@@ -1,36 +1,46 @@
 import sys
+import threading
 
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSlot as Slot, QObject
 
-import Handlers
 from MessengerAPI.Authorization import Authorization
+from MessengerAPI.MessengerAPI import Dialog
 from MessengerAPI.MessengerAPI import MessengerAPI
 from UIInit import UIInit
 
 
 class Manager(QObject):
-    __authorization = Authorization.getInstance()
+    dialogsLoadedSignal = QtCore.pyqtSignal(list)
+    loadUserDialogSignal = QtCore.pyqtSignal(list)
+
+    __authorization = Authorization.getInstance(loadUserDialogSignal)
     __messenger = None
     __ui = None
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         app = QApplication(sys.argv)
         # Handlers connect
-        Handlers.loadUserDialogHandler.connect(self.loadUserDialogHandler)
+        self.loadUserDialogSignal.connect(self.loadUserDialogHandler)
+        self.dialogsLoadedSignal.connect(self.dialogsLoadedHandler)
+
         self.__ui = UIInit(self)
         self.__authorization.setWidget(self.__ui)
-        self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
-        self.__messenger = self.__messenger.loadDialogs()
-        self.loadDialogs()
+        self.__reloadDialogs()
         sys.exit(app.exec_())
 
     def __reloadDialogs(self):
         self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
         self.__ui.clearDialogs()
-        self.__messenger = self.__messenger.loadDialogs()
-        print(self.__messenger)
+        threading.Thread(target=MessengerAPI.loadDialogs,
+                         args=(self.__messenger, self.dialogsLoadedSignal)).start()
+
+    @Slot(list, name="dialogsLoadedHandler")
+    def dialogsLoadedHandler(self, mess):
+        self.__messenger = mess
         self.loadDialogs()
 
     def OpenSettings(self):
@@ -51,7 +61,7 @@ class Manager(QObject):
         self.__reloadDialogs()
         pass
 
-    def loginThowTelegram(self):
+    def loginThrowTelegram(self):
         self.__authorization.authorizationTelegram()
         self.__reloadDialogs()
         pass
@@ -69,7 +79,7 @@ class Manager(QObject):
         self.__ui.clearDialogs()
         self.loadDialogs()
 
-    @Slot(dict, name="loadUserDialogHandler")
+    @Slot(list, name="loadUserDialogHandler")
     def loadUserDialogHandler(self, messages):
         self.__ui.clearMessageLayout()
         for message in messages:
@@ -89,7 +99,8 @@ class Manager(QObject):
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
-            self.__messenger[curr]['dialogs'][row - 1].getMessagesSlot.emit()
+            threading.Thread(target=Dialog.getMessages,
+                             args=(self.__messenger[curr]['dialogs'][row - 1], self.loadUserDialogSignal)).start()
         print("----")
         pass
 

@@ -1,6 +1,6 @@
-import os.path
 import pickle
 
+import os.path
 from PyQt5 import Qt
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -46,20 +46,23 @@ class Authorization:
     __loginDialog = None
     # widget main window
     __window = None
+    # auth handler
+    __authHandler = None
 
     @staticmethod
-    def getInstance():
+    def getInstance(handler):
         """ Static access method. """
         if Authorization.__instance is None:
-            Authorization()
+            Authorization(handler)
         return Authorization.__instance
 
-    def __init__(self):
+    def __init__(self, authHandler):
         """ Virtually private constructor. """
         if Authorization.__instance != None:
             raise Exception("This class is a singleton!")
         else:
             Authorization.__instance = self
+            self.__authHandler = authHandler
         # Parse file with privateKey
         if os.path.exists("privateKeys.pickle"):
             with open("privateKeys.pickle", "rb") as f:
@@ -72,6 +75,7 @@ class Authorization:
 
     def setWidget(self, widget):
         self.__window = widget
+        pass
 
     def getPrivateKeys(self):
         return self.__privateKeys
@@ -93,6 +97,7 @@ class Authorization:
         self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
+        self.__authHandler.emit()
         print("loginThrowVKGroup")
         pass
 
@@ -107,10 +112,11 @@ class Authorization:
         self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
         self.saveKeys()
         self.__loginDialog.close()
+        self.__authHandler.emit()
         # todo: check error, and save user phone
 
     def authorizationTelegram(self):
-        self.__loginDialog = EnterDialog(self.__window, self.setTelephone, "Entter phone", "Ok")
+        self.__loginDialog = EnterDialog(self.__window, self.setTelephone, "Enter phone", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 
@@ -123,6 +129,7 @@ class Authorization:
         self.__loginDialog = VKAuth(self.__window, self.vkUrlChangeHandler)
         self.__loginDialog.show()
         self.__loginDialog.exec_()
+        self.__authHandler.emit()
 
     def vkUrlChangeHandler(self, url):
         currentUrl = url.url()

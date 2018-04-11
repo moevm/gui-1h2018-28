@@ -139,6 +139,10 @@ class UIInit(QMainWindow):
         leftMenu.addWidget(self.dialogList)
         self.dialogList.setMaximumSize(300, 10000)
         self.MessageMenuInit()
+
+        self.loadingIndicator = QLabel()
+        # TODO loading indictor need realization
+
         self.show()
         pass
 
@@ -161,7 +165,7 @@ class UIInit(QMainWindow):
         msgInit.clicked.connect(self.__manager.MessageMenuInit)
         self.rightMenu.addWidget(msgInit)
         telegramLogin = QPushButton('Login throw Telegram')
-        telegramLogin.clicked.connect(self.__manager.loginThowTelegram)
+        telegramLogin.clicked.connect(self.__manager.loginThrowTelegram)
         self.rightMenu.addWidget(telegramLogin)
         vkLogin = QPushButton('Login throw VK')
         vkLogin.clicked.connect(self.__manager.loginThrowVK)
@@ -195,6 +199,10 @@ class UIInit(QMainWindow):
         row = MessengerWidget(info['name'], QIcon(info['icon']), info['messenger_icon'])
         itemN.setSizeHint(row.minimumSizeHint())
         self.dialogList.setItemWidget(itemN, row)
+
+    def startLoadIndicator(self):
+        # TODO need realization
+        pass
 
     def MessageMenuInit(self):
         self.clearLayout(self.rightMenu)
