@@ -1,3 +1,4 @@
+from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -112,6 +113,7 @@ class MessengerWidget(QWidget):
 
 class UIInit(QMainWindow):
     __manager = None
+    LOAD_BAR_SIZE_HALF = 128
 
     def __init__(self, manager):
         super().__init__()
@@ -306,3 +308,8 @@ class UIInit(QMainWindow):
         settingsButton.setStyleSheet("background-color: transparent;margin-right:15px;")
         rightSubMenu.addWidget(settingsButton)
         layout.addWidget(backgroundColor)
+
+    def resizeEvent(self, event):
+        print("resize")
+        self.loadingIndicator.move((self.width() / 2) - self.LOAD_BAR_SIZE_HALF,
+                                   (self.height() / 2) - self.LOAD_BAR_SIZE_HALF)

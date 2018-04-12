@@ -16,6 +16,9 @@ class Manager(QObject):
     dialogsLoadedSignal = QtCore.pyqtSignal(list)
     loadUserDialogSignal = QtCore.pyqtSignal(list)
 
+    onSettingsTab = False
+
+
     __authorization = Authorization.getInstance(loadUserDialogSignal)
     __messenger = None
     __ui = None
@@ -40,10 +43,12 @@ class Manager(QObject):
                          args=(self.__messenger, self.dialogsLoadedSignal)).start()
 
     def OpenSettings(self):
+        self.onSettingsTab = True
         self.__ui.OpenSettings()
         pass
 
     def MessageMenuInit(self):
+        self.onSettingsTab = False
         self.__ui.MessageMenuInit()
         pass
 
@@ -88,6 +93,8 @@ class Manager(QObject):
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
+            if self.onSettingsTab:
+                self.MessageMenuInit()
             dial = self.__messenger[curr]['dialogs'][row - 1]
             self.__ui.startLoadIndicator()
             threading.Thread(target=Dialog.getMessages,

@@ -68,7 +68,6 @@ class Authorization:
             with open("privateKeys.pickle", "rb") as f:
                 self.__privateKeys = pickle.load(f)
                 print(self.__privateKeys)
-            self.__privateKeys["telegram"] = []
             self.saveKeys()
         else:
             self.saveKeys()
@@ -101,13 +100,13 @@ class Authorization:
         self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
-        self.__authHandler.emit()
         print("loginThrowVKGroup")
         pass
 
     def groupApiKey(self):
         self.__privateKeys['vk'].append(self.__loginDialog.lineEdit.text())
         self.saveKeys()
+        self.__authHandler.emit()
         self.__loginDialog.close()
         pass
 
