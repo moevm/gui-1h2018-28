@@ -1,11 +1,12 @@
+from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
-class messageWiget(QWidget):
+class MessageWidget(QWidget):
     def __init__(self, message):
-        super(messageWiget, self).__init__(None)
+        super(MessageWidget, self).__init__(None)
         self.row = QHBoxLayout()
         self.row.setSpacing(0)
         if message.isMyMessage():
@@ -54,9 +55,9 @@ class messageWiget(QWidget):
         lay.addLayout(row)
 
 
-class MyCustomWidget(QWidget):
+class DialogWidget(QWidget):
     def __init__(self, name, lastMessage, logo, parent=None):
-        super(MyCustomWidget, self).__init__(parent)
+        super(DialogWidget, self).__init__(parent)
         self.row = QHBoxLayout()
         rect = QRect(2, 2, 33, 33)
         region = QRegion(rect, QRegion.Ellipse)
@@ -77,7 +78,11 @@ class MyCustomWidget(QWidget):
 class MessengerWidget(QWidget):
     def __init__(self, name, logo, msgLogo, parent=None):
         super(MessengerWidget, self).__init__(parent)
-        self.row = QHBoxLayout()
+        self.setStyleSheet("background-color: 	#ADD8E6;")
+        bac = QHBoxLayout()
+        backgroundColor = QWidget()
+        self.row = QHBoxLayout(backgroundColor)
+        bac.setContentsMargins(0, 0, 0, 0)
         sctickersButton = QPushButton()
         sctickersButton.setIconSize(QSize(50, 50))
         sctickersButton.setStyleSheet("background-color: transparent;")
@@ -95,7 +100,8 @@ class MessengerWidget(QWidget):
         downButton.setStyleSheet("background-color: transparent;")
         downButton.setIcon(QIcon('../resources/down_arrow.png'))
         self.row.addWidget(downButton)
-        self.setLayout(self.row)
+        bac.addWidget(backgroundColor)
+        self.setLayout(bac)
 
         messengerBtn = QPushButton(self)
         messengerBtn.setIconSize(QSize(20, 20))
@@ -107,9 +113,12 @@ class MessengerWidget(QWidget):
 
 class UIInit(QMainWindow):
     __manager = None
+    LOAD_BAR_SIZE_HALF = 128
 
     def __init__(self, manager):
         super().__init__()
+        self.profileBtn = QPushButton('Profile')
+        self.iconProfile = QPushButton()
         self.__manager = manager
         # self.statusBar().showMessage('Ready')
         self.resize(800, 600)
@@ -136,11 +145,19 @@ class UIInit(QMainWindow):
                                             border-radius: 10px;
                                             min-height: 20px;
                                         }""")
+        self.dialogList.verticalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
         leftMenu.addWidget(self.dialogList)
         self.dialogList.setMaximumSize(300, 10000)
         self.MessageMenuInit()
+
+        self.loadingIndicator = QLabel(self)
+        self.loadingIndicatorMovie = QMovie("../resources/loader.gif")
+        self.loadingIndicator.setMovie(self.loadingIndicatorMovie)
+        # self.loadingIndicator.adjustSize()
+        self.loadingIndicator.resize(256, 256)
+        self.loadingIndicator.move(200, 200)
+        self.stopLoadingIndicator()
         self.show()
-        pass
 
     def clearLayout(self, layout):
         while layout.count():
@@ -161,7 +178,7 @@ class UIInit(QMainWindow):
         msgInit.clicked.connect(self.__manager.MessageMenuInit)
         self.rightMenu.addWidget(msgInit)
         telegramLogin = QPushButton('Login throw Telegram')
-        telegramLogin.clicked.connect(self.__manager.loginThowTelegram)
+        telegramLogin.clicked.connect(self.__manager.loginThrowTelegram)
         self.rightMenu.addWidget(telegramLogin)
         vkLogin = QPushButton('Login throw VK')
         vkLogin.clicked.connect(self.__manager.loginThrowVK)
@@ -178,23 +195,28 @@ class UIInit(QMainWindow):
         itemN = QListWidgetItem()
         # itemN.setSizeHint(QSize(100, 100))
         self.dialogList.addItem(itemN)
-        row = MyCustomWidget(dialog.getTitle(), dialog.getLastMessage(), QIcon(dialog.getIcon()))
+        row = DialogWidget(dialog.getTitle(), dialog.getLastMessage(), QIcon(dialog.getIcon()))
         itemN.setSizeHint(row.minimumSizeHint())
         # Associate the custom widget to the list entry
         self.dialogList.setItemWidget(itemN, row)
         # layout.setItemWidget(itemN, widget)
 
     def addMessengerToLayout(self, info):
-        '''
-        Adding user profile in messenger to layout
-        :param info:
-        :return:
-        '''
         itemN = QListWidgetItem()
         self.dialogList.addItem(itemN)
         row = MessengerWidget(info['name'], QIcon(info['icon']), info['messenger_icon'])
         itemN.setSizeHint(row.minimumSizeHint())
         self.dialogList.setItemWidget(itemN, row)
+
+    def stopLoadingIndicator(self):
+        self.loadingIndicatorMovie.stop()
+        self.loadingIndicator.setVisible(False)
+        pass
+
+    def startLoadIndicator(self):
+        self.loadingIndicatorMovie.start()
+        self.loadingIndicator.setVisible(True)
+        pass
 
     def MessageMenuInit(self):
         self.clearLayout(self.rightMenu)
@@ -231,6 +253,11 @@ class UIInit(QMainWindow):
         rightMessageEnter.addWidget(sendButton)
         layout.addWidget(msgEnter)
 
+    def setUserToMenu(self, name, image):
+        self.profileBtn.setText(name)
+        self.iconProfile.setIcon(QIcon(image))
+        pass
+
     def addMessageLayout(self, layout):
         bcgColor2 = QWidget()
         bcgColor2.setStyleSheet("background-color: white")
@@ -247,28 +274,32 @@ class UIInit(QMainWindow):
         # widgetList.setFlow(Qt.AlignBottom)
         self.messageList.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.messageList.verticalScrollBar().setSingleStep(5)
+        self.messageList.horizontalScrollBar().setStyleSheet("QScrollBar {width:0px;}")
         rightMessageHistory.addWidget(self.messageList)
         layout.addWidget(bcgColor2)
 
     def addMessageToLayout(self, message):
         itemN = QListWidgetItem()
         self.messageList.insertItem(0, itemN)
-        widget = messageWiget(message)
+        widget = MessageWidget(message)
         itemN.setSizeHint(widget.sizeHint())
         self.messageList.setItemWidget(itemN, widget)
 
+    def showFirstMessage(self):
+        self.messageList.scrollToBottom()
+
     def addUserSubMenu(self, layout):
+        self.profileBtn = QPushButton('Profile')
+        self.iconProfile = QPushButton()
         backgroundColor = QWidget()
         backgroundColor.setStyleSheet("background-color: #e3dcd6")
         rightSubMenu = QHBoxLayout(backgroundColor)
-        iconProfile = QPushButton()
-        iconProfile.setIcon(QIcon('../resources/testProfileLogo.png'))
-        iconProfile.setIconSize(QSize(35, 35))
-        iconProfile.setStyleSheet("background-color: white;border-radius: 17px;")
-        rightSubMenu.addWidget(iconProfile)
-        profileBtn = QPushButton('Profile')
-        profileBtn.setStyleSheet("background-color: transparent;border-radius: 20px;font-size: 10pt;")
-        rightSubMenu.addWidget(profileBtn)
+        self.iconProfile.setIcon(QIcon('../resources/testProfileLogo.png'))
+        self.iconProfile.setIconSize(QSize(35, 35))
+        self.iconProfile.setStyleSheet("background-color: transparent;border-radius: 17px;")
+        rightSubMenu.addWidget(self.iconProfile)
+        self.profileBtn.setStyleSheet("background-color: transparent;border-radius: 20px;font-size: 10pt;")
+        rightSubMenu.addWidget(self.profileBtn)
         rightSubMenu.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum))
         settingsButton = QPushButton()
         settingsButton.clicked.connect(self.__manager.OpenSettings)
@@ -277,3 +308,8 @@ class UIInit(QMainWindow):
         settingsButton.setStyleSheet("background-color: transparent;margin-right:15px;")
         rightSubMenu.addWidget(settingsButton)
         layout.addWidget(backgroundColor)
+
+    def resizeEvent(self, event):
+        print("resize")
+        self.loadingIndicator.move((self.width() / 2) - self.LOAD_BAR_SIZE_HALF,
+                                   (self.height() / 2) - self.LOAD_BAR_SIZE_HALF)

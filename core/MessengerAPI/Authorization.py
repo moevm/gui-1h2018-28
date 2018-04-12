@@ -1,6 +1,6 @@
-import os.path
 import pickle
 
+import os.path
 from PyQt5 import Qt
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -26,7 +26,7 @@ class VKAuth(Qt.QDialog):
 
 
 class EnterDialog(Qt.QDialog):
-    def __init__(self, window, hander,labelText,buttonText):
+    def __init__(self, window, hander, labelText, buttonText):
         super().__init__(window)
         layout = Qt.QVBoxLayout(self)
         layout.addWidget(QLabel(labelText))
@@ -35,7 +35,6 @@ class EnterDialog(Qt.QDialog):
         btn.clicked.connect(hander)
         layout.addWidget(self.lineEdit)
         layout.addWidget(btn)
-
 
 
 class Authorization:
@@ -47,31 +46,35 @@ class Authorization:
     __loginDialog = None
     # widget main window
     __window = None
-
+    # auth handler
+    __authHandler = None
 
     @staticmethod
-    def getInstance():
+    def getInstance(handler):
         """ Static access method. """
         if Authorization.__instance is None:
-            Authorization()
+            Authorization(handler)
         return Authorization.__instance
 
-    def __init__(self):
+    def __init__(self, authHandler):
         """ Virtually private constructor. """
         if Authorization.__instance != None:
             raise Exception("This class is a singleton!")
         else:
             Authorization.__instance = self
+            self.__authHandler = authHandler
         # Parse file with privateKey
         if os.path.exists("privateKeys.pickle"):
             with open("privateKeys.pickle", "rb") as f:
                 self.__privateKeys = pickle.load(f)
                 print(self.__privateKeys)
+            self.saveKeys()
         else:
             self.saveKeys()
 
     def setWidget(self, widget):
         self.__window = widget
+        pass
 
     def getPrivateKeys(self):
         return self.__privateKeys
@@ -81,13 +84,17 @@ class Authorization:
         print(self.userTel)
         self.__loginDialog.close()
         print(TelegramApi.api_id, TelegramApi.api_hash)
-        self.__telegaClient = TelegramClient('telegram.' + self.userTel + '.session', TelegramApi.api_id,
-                                             TelegramApi.api_hash)
-        self.__telegaClient.connect()
-        self.__telegaClient.send_code_request(self.userTel)
-        self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler,str(self.userTel) + "\nEnter code:","Ok")
-        self.__loginDialog.show()
-        self.__loginDialog.exec_()
+        try:
+            self.__telegaClient = TelegramClient('telegram.' + self.userTel + '.session', TelegramApi.api_id,
+                                                 TelegramApi.api_hash)
+            self.__telegaClient.connect()
+            self.__telegaClient.send_code_request(self.userTel)
+            self.__loginDialog = EnterDialog(self.__window, self.codeSetHandler, str(self.userTel) + "\nEnter code:",
+                                             "Ok")
+            self.__loginDialog.show()
+            self.__loginDialog.exec_()
+        except Exception as e:
+            print(e)
 
     def loginThrowVKGroup(self):
         self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
@@ -99,18 +106,25 @@ class Authorization:
     def groupApiKey(self):
         self.__privateKeys['vk'].append(self.__loginDialog.lineEdit.text())
         self.saveKeys()
+        self.__authHandler.emit()
         self.__loginDialog.close()
         pass
 
     def codeSetHandler(self):
-        self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
-        self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
-        self.saveKeys()
-        self.__loginDialog.close()
+        try:
+            self.__telegaClient.sign_in(self.userTel, self.__loginDialog.lineEdit.text())
+            self.__privateKeys['telegram'].append('telegram.' + self.userTel + '.session')
+            self.saveKeys()
+            self.__loginDialog.close()
+            self.__authHandler.emit()
+        except Exception as e:
+            print(e)
+        finally:
+            self.__loginDialog.close()
         # todo: check error, and save user phone
 
     def authorizationTelegram(self):
-        self.__loginDialog = EnterDialog(self.__window, self.setTelephone,"Entter phone","Ok")
+        self.__loginDialog = EnterDialog(self.__window, self.setTelephone, "Enter phone", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
 
@@ -123,6 +137,7 @@ class Authorization:
         self.__loginDialog = VKAuth(self.__window, self.vkUrlChangeHandler)
         self.__loginDialog.show()
         self.__loginDialog.exec_()
+        self.__authHandler.emit()
 
     def vkUrlChangeHandler(self, url):
         currentUrl = url.url()

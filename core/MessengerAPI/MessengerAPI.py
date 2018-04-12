@@ -1,3 +1,6 @@
+import PyQt5
+from PyQt5.QtCore import pyqtSignal as Signal
+
 from MessengerAPI.TelegramApi import TelegramApi
 from MessengerAPI.VKApi import VKApi
 
@@ -6,15 +9,16 @@ class Dialog:
     __dialogId = None
     __title = None
     __api = None
+    getMessagesSignal = Signal(PyQt5.QtCore.pyqtBoundSignal)
 
     def __init__(self, dialog):
+        # super().__init__(parent)
         self.__messages = []
         self.__lastMessage = dialog['message']
         self.__iconPath = dialog['dialog_photo']
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
         self.__dialogId = str(dialog['dialog_id'])
-        pass
 
     def getLastMessage(self):
         return self.__lastMessage
@@ -27,10 +31,11 @@ class Dialog:
             self.__messages.append(Message(msg))
         pass
 
-    def getMessages(self):
+    def getMessages(self, signal):
         # self.__messages.clear()
         self.loadMessages(len(self.__messages))
-        return self.__messages
+        print(type(self.__messages))
+        signal.emit(self.__messages)
 
     def getIcon(self):
         return self.__iconPath
@@ -66,10 +71,10 @@ class Attachments:
 class MessengerAPI:
     def __init__(self, authTokens):
         self.__messengerAPI = {'vk': [], 'telegram': []}
-        self.__createmessengerClasses(authTokens)
+        self.__createMessengerClasses(authTokens)
         pass
 
-    def loadDialogs(self):
+    def loadDialogs(self, handler):
         dialogs = []
         for api in self.__messengerAPI:
             for mess in self.__messengerAPI[api]:
@@ -79,10 +84,11 @@ class MessengerAPI:
                      'size': len(dial) + 1, 'icon': mess.getPathIcon(),
                      'dialogs': []})
                 for dialog in dial:
-                    dialogs[-1]['dialogs'].append(Dialog(dialog))
-        return dialogs
+                    dd = Dialog(dialog)
+                    dialogs[-1]['dialogs'].append(dd)
+        handler.emit(dialogs)
 
-    def __createmessengerClasses(self, authTokens):
+    def __createMessengerClasses(self, authTokens):
         for mess in authTokens:
             for key in authTokens[mess]:
                 if mess == "vk":

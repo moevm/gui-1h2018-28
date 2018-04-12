@@ -1,42 +1,54 @@
 import sys
+import threading
 
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWidgets import *
 
 from MessengerAPI.Authorization import Authorization
+from MessengerAPI.MessengerAPI import Dialog
 from MessengerAPI.MessengerAPI import MessengerAPI
 from UIInit import UIInit
 
 
-class Manager:
-    __authorization = Authorization.getInstance()
+class Manager(QObject):
+    dialogsLoadedSignal = QtCore.pyqtSignal(list)
+    loadUserDialogSignal = QtCore.pyqtSignal(list)
+
+    onSettingsTab = False
+
+
+    __authorization = Authorization.getInstance(loadUserDialogSignal)
     __messenger = None
     __ui = None
 
-    def __init__(self):
-        try:
-            app = QApplication(sys.argv)
-            self.__ui = UIInit(self)
-            self.__authorization.setWidget(self.__ui)
-            self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
-            self.__messenger = self.__messenger.loadDialogs()
-            self.loadDialogs()
-            sys.exit(app.exec_())
-        except BaseException as e:
-            print(e)
-            raise e
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        app = QApplication(sys.argv)
+        # Handlers connect
+        self.loadUserDialogSignal.connect(self.loadUserDialogHandler)
+        self.dialogsLoadedSignal.connect(self.dialogsLoadedHandler)
+
+        self.__ui = UIInit(self)
+        self.__authorization.setWidget(self.__ui)
+        self.__reloadDialogs()
+        sys.exit(app.exec_())
 
     def __reloadDialogs(self):
+        self.__ui.startLoadIndicator()
         self.__messenger = MessengerAPI(self.__authorization.getPrivateKeys())
         self.__ui.clearDialogs()
-        self.__messenger = self.__messenger.loadDialogs()
-        print(self.__messenger)
-        self.loadDialogs()
+        threading.Thread(target=MessengerAPI.loadDialogs,
+                         args=(self.__messenger, self.dialogsLoadedSignal)).start()
 
     def OpenSettings(self):
+        self.onSettingsTab = True
         self.__ui.OpenSettings()
         pass
 
     def MessageMenuInit(self):
+        self.onSettingsTab = False
         self.__ui.MessageMenuInit()
         pass
 
@@ -50,7 +62,7 @@ class Manager:
         self.__reloadDialogs()
         pass
 
-    def loginThowTelegram(self):
+    def loginThrowTelegram(self):
         self.__authorization.authorizationTelegram()
         self.__reloadDialogs()
         pass
@@ -81,11 +93,29 @@ class Manager:
         if row == 0:
             self.messengerSetHide(curr, not self.__messenger[curr]['visibility'])
         else:
-            self.__ui.clearMessageLayout()
-            for message in self.__messenger[curr]['dialogs'][row - 1].getMessages():
-                self.__ui.addMessageToLayout(message)
+            if self.onSettingsTab:
+                self.MessageMenuInit()
+            dial = self.__messenger[curr]['dialogs'][row - 1]
+            self.__ui.startLoadIndicator()
+            threading.Thread(target=Dialog.getMessages,
+                             args=(dial, self.loadUserDialogSignal)).start()
+            self.__ui.setUserToMenu(dial.getTitle(), dial.getIcon())
         print("----")
         pass
+
+    @Slot(list, name="dialogsLoadedHandler")
+    def dialogsLoadedHandler(self, mess):
+        self.__messenger = mess
+        self.loadDialogs()
+        self.__ui.stopLoadingIndicator()
+
+    @Slot(list, name="loadUserDialogHandler")
+    def loadUserDialogHandler(self, messages):
+        self.__ui.clearMessageLayout()
+        for message in messages:
+            self.__ui.addMessageToLayout(message)
+        self.__ui.showFirstMessage()
+        self.__ui.stopLoadingIndicator()
 
 
 if __name__ == '__main__':

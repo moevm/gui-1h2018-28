@@ -103,7 +103,7 @@ class TelegramApi:
         """
         dialogs = []
         for dialog in self.client.get_dialogs(limit=10):
-            if dialog.entity.photo != None:
+            if hasattr(dialog.entity, 'photo'):
                 print(dialog.entity.photo.__dict__)
             if isinstance(dialog.entity, telethon.tl.types.User):
                 dialogs.append({
@@ -136,10 +136,10 @@ class TelegramApi:
                         "message": self.parseMessage(dialog.message),
                         "dialog_title": dialog.entity.title,
                         "last_message": "last message",
-                        "dialog_photo": "../resources/testProfileLogo.png" if dialog.entity.photo is None else
-                        self.client.download_profile_photo(dialog.entity.photo,
-                                                           file='./images/telegramAPI/img' + str(
-                                                               dialog.dialog.peer.chat_id) + '.jpg'),
+                        "dialog_photo": "../resources/testProfileLogo.png",
+                        # if hasattr(dialog.entity, 'photo') and dialog.entity.photo is None else
+                        # self.client.download_profile_photo(dialog.entity.photo, file='./images/telegramAPI/img' + str(
+                        #    dialog.dialog.peer.chat_id) + '.jpg'),
                         "getMessages": self.getMessagesByChatId
                     })
         return dialogs

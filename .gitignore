@@ -2,4 +2,6 @@
 __pycache__
 .idea
 *.session
-/core/images/
+/core/images/**/*.png
+/core/images/**/*.jpg
+/core/images/**/*.jpeg
