@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWidgets import *
 
 from MessengerAPI.Authorization import Authorization
-from MessengerAPI.MessengerAPI import Dialog
+from MessengerAPI.MessengerAPI import Dialog, Message
 from MessengerAPI.MessengerAPI import MessengerAPI
 from UIInit import UIInit
 
@@ -18,13 +18,13 @@ class Manager(QObject):
 
     onSettingsTab = False
 
-
     __authorization = Authorization.getInstance(loadUserDialogSignal)
     __messenger = None
     __ui = None
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.currentDial = None
         app = QApplication(sys.argv)
         # Handlers connect
         self.loadUserDialogSignal.connect(self.loadUserDialogHandler)
@@ -80,6 +80,16 @@ class Manager(QObject):
         self.__ui.clearDialogs()
         self.loadDialogs()
 
+    def sendMessage(self):
+        if self.currentDial is not None:
+            message = self.__ui.getMessageText()
+            print(message)
+            self.currentDial.sendMessage(message)
+            self.__ui.addMessageToLayoutToBottom(Message({"text": message, "from_id": 0, "my_message": True}))
+            self.__ui.clearMessageText()
+            self.__ui.showFirstMessage()
+        print("clicked")
+
     def loadUserDialog(self, user):
         print(user.row())
         row = user.row()
@@ -95,11 +105,12 @@ class Manager(QObject):
         else:
             if self.onSettingsTab:
                 self.MessageMenuInit()
-            dial = self.__messenger[curr]['dialogs'][row - 1]
+            self.currentDial = self.__messenger[curr]['dialogs'][row - 1]
             self.__ui.startLoadIndicator()
+            print(self.currentDial.__dict__)
             threading.Thread(target=Dialog.getMessages,
-                             args=(dial, self.loadUserDialogSignal)).start()
-            self.__ui.setUserToMenu(dial.getTitle(), dial.getIcon())
+                             args=(self.currentDial, self.loadUserDialogSignal)).start()
+            self.__ui.setUserToMenu(self.currentDial.getTitle(), self.currentDial.getIcon())
         print("----")
         pass
 
@@ -113,7 +124,7 @@ class Manager(QObject):
     def loadUserDialogHandler(self, messages):
         self.__ui.clearMessageLayout()
         for message in messages:
-            self.__ui.addMessageToLayout(message)
+            self.__ui.addMessageToLayoutToTop(message)
         self.__ui.showFirstMessage()
         self.__ui.stopLoadingIndicator()
 

@@ -18,6 +18,7 @@ class Dialog:
         self.__iconPath = dialog['dialog_photo']
         self.__title = dialog['dialog_title']
         self.__getMess = dialog['getMessages']
+        self.__sendMess = dialog['sendMessage']
         self.__dialogId = str(dialog['dialog_id'])
 
     def getLastMessage(self):
@@ -39,6 +40,10 @@ class Dialog:
 
     def getIcon(self):
         return self.__iconPath
+
+    def sendMessage(self, message):
+        print("sendMessage to id-" + str(self.__dialogId))
+        self.__sendMess(self.__dialogId, message)
 
 
 class Message:

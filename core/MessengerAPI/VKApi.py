@@ -40,11 +40,17 @@ class VKApi:
     def getPathIcon(self):
         return self.__userIcon
 
+    def sendMessage(self):
+        print("ggg")
+        pass
+
     def getDialog(self, user):
         pass
 
     def getMessagesByChat(self, chatId, offset):
-        msg = self.getMessagesById("20000000" + str(chatId), offset)
+        print("chat")
+        print(chatId)
+        msg = self.getMessagesById(str(2000000000 + int(chatId)), offset)
         return msg
 
     def getMessagesById(self, userId, offset):
@@ -90,19 +96,27 @@ class VKApi:
                      "message": dialog['message']['body'],
                      "dialog_photo": self.downloadImage(dialog['message']['photo_50'])
                      if 'photo_50' in dialog['message'] else '../resources/testProfileLogo.png',
+                     "sendMessage": self.sendMessageToChat,
                      "getMessages": self.getMessagesByChat, "dialog_title": dialog['message']['title']})
             else:
                 itemsToReturn.append({"dialog_id": dialog['message']['user_id'], "getMessages": self.getMessagesById,
                                       "message": dialog['message']['body'],
                                       "dialog_photo": '../resources/testProfileLogo.png',
+                                      "sendMessage": self.sendMessage,
                                       "dialog_title": "Unknown"})
                 userHelpId = str(dialog['message']['user_id'])
                 if userHelpId[0:1] != '-':
                     usersId.append(userHelpId)
                 else:
                     groupsId.append(userHelpId[1:])
-        userInfo = self.getUserById(usersId)
-        groupInfo = self.getGroupById(groupsId)
+        if len(usersId)>0:
+            userInfo = self.getUserById(usersId)
+        else:
+            userInfo = []
+        if len(groupsId)>0:
+            groupInfo = self.getGroupById(groupsId)
+        else:
+            groupInfo = []
         numUser = 0
         numGroup = 0
         for n, dialog in enumerate(dialogs['items']):
@@ -112,12 +126,12 @@ class VKApi:
                         'last_name']
                     itemsToReturn[n]['dialog_photo'] = self.downloadImage(userInfo[numUser]['photo_50'])
                     numUser += 1
-            if len(groupInfo) > numGroup:
+            elif len(groupInfo) > numGroup:
                 if str(groupInfo[numGroup]['id']) == str(dialog['message']['user_id'])[1:]:
                     itemsToReturn[n]['dialog_title'] = groupInfo[numGroup]['name']
                     itemsToReturn[n]['dialog_photo'] = self.downloadImage(groupInfo[numGroup]['photo_50'])
                     numGroup += 1
-
+        print(itemsToReturn)
         return itemsToReturn
 
     def getMessengerIcon(self):
@@ -126,5 +140,12 @@ class VKApi:
     def userInfo(self, user):
         pass
 
-    def sendMessage(self, message):
+    def sendMessageToChat(self, id, message):
+        self.sendMessage(str(2000000000 + int(id)), message)
+
+    # def sendMessageToGroup(self, id, message):
+    #   self.sendMessage('-' + str(id), message)
+
+    def sendMessage(self, id, message):
+        self.vkApi.messages.send(user_id=id, message=message)
         pass

@@ -125,7 +125,7 @@ class UIInit(QMainWindow):
         self.setWindowTitle('Messenger')
         wid = QWidget(self)
         self.setCentralWidget(wid)
-
+        self.messageText = None
         mainLayout = QHBoxLayout()
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0, 0, 0, 0)
@@ -158,6 +158,11 @@ class UIInit(QMainWindow):
         self.loadingIndicator.move(200, 200)
         self.stopLoadingIndicator()
         self.show()
+
+    def clearMessageText(self):
+        self.messageText.setText("")
+    def getMessageText(self):
+        return self.messageText.toPlainText()
 
     def clearLayout(self, layout):
         while layout.count():
@@ -235,18 +240,18 @@ class UIInit(QMainWindow):
         attachButton.setIconSize(QSize(40, 40))
         attachButton.setStyleSheet("background-color: transparent")
         rightMessageEnter.addWidget(attachButton)
-        lineEdit = QTextEdit()
-        lineEdit.setPlainText("Enter message...")
-        lineEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
-        lineEdit.setStyleSheet("border: 1px solid black;border-radius:5px;background-color:white;")
-        lineEdit.setMaximumSize(10000, 35)
-        rightMessageEnter.addWidget(lineEdit)
+        self.messageText = QTextEdit()
+        self.messageText.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        self.messageText.setStyleSheet("border: 1px solid black;border-radius:5px;background-color:white;")
+        self.messageText.setMaximumSize(10000, 35)
+        rightMessageEnter.addWidget(self.messageText)
         sctickersButton = QPushButton()
         sctickersButton.setIcon(QIcon('../resources/smileIcon.png'))
         sctickersButton.setIconSize(QSize(30, 30))
         sctickersButton.setStyleSheet("background-color: transparent")
         rightMessageEnter.addWidget(sctickersButton)
         sendButton = QPushButton()
+        sendButton.clicked.connect(self.__manager.sendMessage)
         sendButton.setIcon(QIcon('../resources/sendMessageIcon.png'))
         sendButton.setIconSize(QSize(30, 30))
         sendButton.setStyleSheet("background-color: transparent;margin-right:15px;")
@@ -278,9 +283,16 @@ class UIInit(QMainWindow):
         rightMessageHistory.addWidget(self.messageList)
         layout.addWidget(bcgColor2)
 
-    def addMessageToLayout(self, message):
+    def addMessageToLayoutToTop(self, message):
         itemN = QListWidgetItem()
         self.messageList.insertItem(0, itemN)
+        widget = MessageWidget(message)
+        itemN.setSizeHint(widget.sizeHint())
+        self.messageList.setItemWidget(itemN, widget)
+
+    def addMessageToLayoutToBottom(self, message):
+        itemN = QListWidgetItem()
+        self.messageList.insertItem(99999, itemN)
         widget = MessageWidget(message)
         itemN.setSizeHint(widget.sizeHint())
         self.messageList.setItemWidget(itemN, widget)

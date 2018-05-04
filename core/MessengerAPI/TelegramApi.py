@@ -28,6 +28,10 @@ class TelegramApi:
     def getDialog(self, user):
         pass
 
+    def sendMessageById(self):
+        print("ggg")
+
+
     def getMessagesByChat(self, chatId, offset):
         print(chatId)
         return []
@@ -103,7 +107,7 @@ class TelegramApi:
         """
         dialogs = []
         for dialog in self.client.get_dialogs(limit=10):
-            if hasattr(dialog.entity, 'photo'):
+            if hasattr(dialog.entity, 'photo') and dialog.entity.photo is not None:
                 print(dialog.entity.photo.__dict__)
             if isinstance(dialog.entity, telethon.tl.types.User):
                 dialogs.append({
@@ -115,6 +119,7 @@ class TelegramApi:
                                                        file='./images/telegramAPI/img' + str(
                                                            dialog.dialog.peer.user_id) + '.jpg'),
                     "last_message": "last message",
+                    "sendMessage": self.sendMessage,
                     "getMessages": self.getMessagesByUserId
                 })
             else:
@@ -128,6 +133,7 @@ class TelegramApi:
                                                            file='./images/telegramAPI/img' + str(
                                                                dialog.dialog.peer.channel_id) + '.jpg'),
                         "last_message": "last message",
+                        "sendMessage": self.sendMessage,
                         "getMessages": self.getMessagesByChannelId
                     })
                 else:
@@ -140,6 +146,7 @@ class TelegramApi:
                         # if hasattr(dialog.entity, 'photo') and dialog.entity.photo is None else
                         # self.client.download_profile_photo(dialog.entity.photo, file='./images/telegramAPI/img' + str(
                         #    dialog.dialog.peer.chat_id) + '.jpg'),
+                        "sendMessage": self.sendMessage,
                         "getMessages": self.getMessagesByChatId
                     })
         return dialogs
@@ -150,5 +157,7 @@ class TelegramApi:
     def userInfo(self, user):
         pass
 
-    def sendMessage(self, message):
+    def sendMessage(self,id, message):
+        print(id)
+        self.client.send_message(self.client.get_entity(int(id)), message)
         pass
