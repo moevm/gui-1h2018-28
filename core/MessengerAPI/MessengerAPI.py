@@ -43,7 +43,9 @@ class Dialog:
 
     def sendMessage(self, message):
         print("sendMessage to id-" + str(self.__dialogId))
-        self.__sendMess(self.__dialogId, message)
+        self.__lastMessage = message.getText()
+        self.__messages.insert(0,message)
+        self.__sendMess(self.__dialogId, message.getText())
 
 
 class Message:

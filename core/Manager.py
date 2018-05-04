@@ -84,8 +84,9 @@ class Manager(QObject):
         if self.currentDial is not None:
             message = self.__ui.getMessageText()
             print(message)
-            self.currentDial.sendMessage(message)
-            self.__ui.addMessageToLayoutToBottom(Message({"text": message, "from_id": 0, "my_message": True}))
+            msgClass = Message({"text": message, "from_id": 0, "my_message": True})
+            self.currentDial.sendMessage(msgClass)
+            self.__ui.addMessageToLayoutToBottom(msgClass)
             self.__ui.clearMessageText()
             self.__ui.showFirstMessage()
         print("clicked")
