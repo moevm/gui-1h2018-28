@@ -54,17 +54,27 @@ class VKApi:
         return msg
 
     def getMessagesById(self, userId, offset):
-        """
-        [{
-            "text": text,
-            "attach":attach,
-            "from_id":id
-            "my_id":myId ...]
-        """
-        messages = self.vkApi.messages.getHistory(user_id=userId, offset=offset)['items']
+        messages = self.vkApi.messages.getHistory(user_id=userId, offset=int(offset))['items']
         msgToReturn = []
         for msg in messages:
+            attachments = []
+            if 'attachments' in msg:
+                for attach in msg['attachments']:
+                    if attach['type'] == 'sticker':
+                        attachments.append({"type": 'sticker', "url": attach['sticker']['photo_256']})
+                    elif attach['type'] == 'audio':
+                        attachments.append(
+                            {"type": 'audio', "duration": attach['audio']['duration'],
+                             "body": attach['audio']['artist'] + '-' + attach['audio']['title'],
+                             "url": attach['audio']['url']})
+                    elif attach['type'] == 'video':
+                        print(attach)
+                        attachments.append({"type": 'video', "body": attach['video']['title'], "url": "Hmm"})
+                    elif attach['type'] == 'photo':
+                        attachments.append({"type": 'photo', "url": attach['photo']['photo_604']})
+
             msgToReturn.append({'text': msg['body'],
+                                "attachments": attachments,
                                 'from_id': str(msg['from_id']), 'my_message': msg['out'] == 1})
 
         return msgToReturn
@@ -76,15 +86,6 @@ class VKApi:
         return self.vkApi.groups.getById(group_ids=','.join(group_ids), fields='photo_50')
 
     def getMyDialogs(self):
-        """
-        Format return v0.1
-        [{
-            "dialog_id":99999 (user_id or chat_id)
-            "dialog_title":"Title"
-            "last_message":Message
-            "getMessages":Method to get more messages
-        },...]
-        """
         dialogs = self.vkApi.messages.getDialogs()
         usersId = []
         groupsId = []
@@ -109,11 +110,11 @@ class VKApi:
                     usersId.append(userHelpId)
                 else:
                     groupsId.append(userHelpId[1:])
-        if len(usersId)>0:
+        if len(usersId) > 0:
             userInfo = self.getUserById(usersId)
         else:
             userInfo = []
-        if len(groupsId)>0:
+        if len(groupsId) > 0:
             groupInfo = self.getGroupById(groupsId)
         else:
             groupInfo = []
@@ -121,12 +122,12 @@ class VKApi:
         numGroup = 0
         for n, dialog in enumerate(dialogs['items']):
             if len(userInfo) > numUser:
-                if userInfo[numUser]['id'] == dialog['message']['user_id']:
+                if 'chat_id' not in dialog['message'] and userInfo[numUser]['id'] == dialog['message']['user_id']:
                     itemsToReturn[n]['dialog_title'] = userInfo[numUser]['first_name'] + ' ' + userInfo[numUser][
                         'last_name']
                     itemsToReturn[n]['dialog_photo'] = self.downloadImage(userInfo[numUser]['photo_50'])
                     numUser += 1
-            elif len(groupInfo) > numGroup:
+            if len(groupInfo) > numGroup:
                 if str(groupInfo[numGroup]['id']) == str(dialog['message']['user_id'])[1:]:
                     itemsToReturn[n]['dialog_title'] = groupInfo[numGroup]['name']
                     itemsToReturn[n]['dialog_photo'] = self.downloadImage(groupInfo[numGroup]['photo_50'])

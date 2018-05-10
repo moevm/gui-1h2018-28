@@ -2,6 +2,8 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+import os
+from urllib import request
 
 
 class MessageWidget(QWidget):
@@ -20,6 +22,17 @@ class MessageWidget(QWidget):
 
         self.setLayout(self.row)
 
+    def downloadImage(self, url):
+        if os.path.exists(url):
+            return url
+        saveDir = './images/dialogAttachments/' + url[11:].replace('/', '.')
+        if os.path.exists(saveDir):
+            return saveDir
+        else:
+            request.urlretrieve(url, saveDir)
+            return saveDir
+        pass
+
     def addMessageLayout(self, message, rightSide):
         backgroundColor = QWidget()
         if rightSide:
@@ -33,11 +46,30 @@ class MessageWidget(QWidget):
                                           " border-top-right-radius: 15px;"
                                           " border-bottom-right-radius: 15px;")
         messageLayout = QVBoxLayout(backgroundColor)
-        label = QLabel(message.getText())
-        label.setWordWrap(True)
-        label.setStyleSheet("background-color: transparent;")
-        label.setScaledContents(True)
-        messageLayout.addWidget(label)
+
+        for attach in message.getAttachments():
+            if attach.isSticker() or attach.isPhoto():
+                sctickersButton = QPushButton()
+                if attach.isPhoto():
+                    sctickersButton.setIconSize(QSize(256, 256))
+                else:
+                    sctickersButton.setIconSize(QSize(128, 128))
+                sctickersButton.setIcon(QIcon(self.downloadImage(attach.getUrl())))
+                sctickersButton.setStyleSheet("background-color: transparent;")
+                messageLayout.addWidget(sctickersButton)
+            elif attach.isAudio() or attach.isVideo():
+                audio = QLabel(attach.getBody())
+                audio.setWordWrap(True)
+                audio.setStyleSheet("background-color: transparent;")
+                audio.setScaledContents(True)
+                messageLayout.addWidget(audio)
+
+        if message.getText() != "":
+            label = QLabel(message.getText())
+            label.setWordWrap(True)
+            label.setStyleSheet("background-color: transparent;")
+            label.setScaledContents(True)
+            messageLayout.addWidget(label)
         self.row.addWidget(backgroundColor)
 
     @staticmethod
@@ -161,6 +193,7 @@ class UIInit(QMainWindow):
 
     def clearMessageText(self):
         self.messageText.setText("")
+
     def getMessageText(self):
         return self.messageText.toPlainText()
 
@@ -191,6 +224,9 @@ class UIInit(QMainWindow):
         vkLogin = QPushButton('Login VK Group')
         vkLogin.clicked.connect(self.__manager.loginThrowVKGroup)
         self.rightMenu.addWidget(vkLogin)
+        facebookLogin = QPushButton('Login throw Facebook')
+        facebookLogin.clicked.connect(self.__manager.loginThrowFacebook)
+        self.rightMenu.addWidget(facebookLogin)
         pass
 
     def clearDialogs(self):

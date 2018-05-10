@@ -44,7 +44,7 @@ class Dialog:
     def sendMessage(self, message):
         print("sendMessage to id-" + str(self.__dialogId))
         self.__lastMessage = message.getText()
-        self.__messages.insert(0,message)
+        self.__messages.insert(0, message)
         self.__sendMess(self.__dialogId, message.getText())
 
 
@@ -58,7 +58,12 @@ class Message:
         self.__text = message['text']
         self.__fromId = message['from_id']
         self.__myMessage = message['my_message']
-        pass
+        self.__attachments = []
+        for attach in message['attachments']:
+            self.__attachments.append(Attachment(attach))
+
+    def getAttachments(self):
+        return self.__attachments
 
     def getText(self):
         return self.__text
@@ -70,14 +75,37 @@ class Message:
         return self.__fromId
 
 
-class Attachments:
+class Attachment:
+
     def __init__(self, json):
+        print(json)
+        self.__type = json['type']
+        self.__url = json['url']
+        if 'body' in json:
+            self.__body = json['body']
         pass
 
+    def isSticker(self):
+        return self.__type == "sticker"
+
+    def isPhoto(self):
+        return self.__type == "photo"
+
+    def isAudio(self):
+        return self.__type == "audio"
+
+    def isVideo(self):
+        return self.__type == "video"
+
+    def getUrl(self):
+        return self.__url
+
+    def getBody(self):
+        return self.__body
 
 class MessengerAPI:
     def __init__(self, authTokens):
-        self.__messengerAPI = {'vk': [], 'telegram': []}
+        self.__messengerAPI = {'vk': [], 'telegram': [], 'facebook': []}
         self.__createMessengerClasses(authTokens)
         pass
 

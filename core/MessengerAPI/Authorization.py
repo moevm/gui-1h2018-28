@@ -22,7 +22,21 @@ class VKAuth(Qt.QDialog):
             "https://oauth.vk.com/authorize?client_id=6374130&display=page&redirect_uri=https://oauth.vk.com/"
             "blank.html&scope=friends,messages,offline&response_type=token&v=5.73"))
         layout.addWidget(wv)
-        self.resize(400, 400)
+        self.resize(600, 400)
+
+
+class FacebookAuth(Qt.QDialog):
+    def __init__(self, window, authHandler):
+        super().__init__(window)
+        layout = Qt.QVBoxLayout(self)
+        self.label = Qt.QLabel("")
+        wv = QWebEngineView()
+        wv.page().profile().cookieStore().deleteAllCookies()
+        wv.urlChanged.connect(authHandler)
+        wv.load(QUrl(
+            "https://www.facebook.com/v3.0/dialog/oauth?client_id=1057443961071784&redirect_uri=https://www.facebook.com/connect/login_success.html&scope=pages_messaging,user_friends"))
+        layout.addWidget(wv)
+        self.resize(600, 400)
 
 
 class EnterDialog(Qt.QDialog):
@@ -41,7 +55,7 @@ class Authorization:
     # Here will be the instance stored.
     __instance = None
     # Here will be the private keys VK stored and telegram : telethon clients
-    __privateKeys = {"vk": [], "telegram": []}
+    __privateKeys = {"vk": [], "telegram": [], "facebook": []}
     # Dialog with login form
     __loginDialog = None
     # widget main window
@@ -96,7 +110,7 @@ class Authorization:
         except Exception as e:
             print(e)
 
-    def loginThrowVKGroup(self):
+    def authorizationVKGroup(self):
         self.__loginDialog = EnterDialog(self.__window, self.groupApiKey, "Enter key", "Ok")
         self.__loginDialog.show()
         self.__loginDialog.exec_()
@@ -139,9 +153,24 @@ class Authorization:
         self.__loginDialog.exec_()
         self.__authHandler.emit()
 
+    def authorizationFacebook(self):
+        self.__loginDialog = FacebookAuth(self.__window, self.facebookUrlChangeHandler)
+        self.__loginDialog.show()
+        self.__loginDialog.exec_()
+        self.__authHandler.emit()
+
     def vkUrlChangeHandler(self, url):
         currentUrl = url.url()
         if currentUrl.find("https://oauth.vk.com/blank.html#access_token=") != -1:
             self.__privateKeys["vk"].append(currentUrl[45:currentUrl.find("&expires_in")])
+            self.saveKeys()
+            self.__loginDialog.close()
+
+    def facebookUrlChangeHandler(self, url):
+        currentUrl = url.url()
+        print(currentUrl)
+        if currentUrl.find("https://www.facebook.com/connect/login_success.html") != -1:
+            print(currentUrl[57:])
+            self.__privateKeys["facebook"].append(currentUrl[57:])
             self.saveKeys()
             self.__loginDialog.close()

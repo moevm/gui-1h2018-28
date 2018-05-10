@@ -2,6 +2,7 @@ import telethon
 from telethon import TelegramClient
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 from telethon.utils import get_display_name
+import os
 
 
 class TelegramApi:
@@ -31,7 +32,6 @@ class TelegramApi:
     def sendMessageById(self):
         print("ggg")
 
-
     def getMessagesByChat(self, chatId, offset):
         print(chatId)
         return []
@@ -46,48 +46,47 @@ class TelegramApi:
         """
         print(userId)
         print(PeerUser(userId))
-        print(self.client.get_message_history(userId))
+        print(self.client.get_messages(userId, offset=offset))
         return []
 
     def getMessagesByChannelId(self, userId, offset):
         print("get by channel id")
-        return self.getMsgsByPeer(PeerChannel(int(userId)))
+        return self.getMsgsByPeer(PeerChannel(int(userId)), offset)
 
     def getMessagesByChatId(self, userId, offset):
         print("get by chat id")
-        return self.getMsgsByPeer(PeerChat(int(userId)))
+        return self.getMsgsByPeer(PeerChat(int(userId)), offset)
 
     def getMessagesByUserId(self, userId, offset):
         print("get by user id")
-        return self.getMsgsByPeer(PeerUser(int(userId)))
+        return self.getMsgsByPeer(PeerUser(int(userId)), offset)
 
-    def getMsgsByPeer(self, peer):
-        msgs = self.client.get_message_history(self.client.get_entity(peer))
-        return [{"text": self.parseMessage(x), "my_message": x.out, "from_id": 1} for x in msgs]
+    def getMsgsByPeer(self, peer, offset):
+        msgs = self.client.get_messages(self.client.get_entity(peer),add_offset=offset)
+        return [{"text": x.message, "attachments": self.getAttach(x), "my_message": x.out, "from_id": 1} for x in msgs]
+
+    def getAttach(self, msg):
+        if msg.media != None:
+            print(type(msg.media))
+            file = None
+            if type(msg.media) == telethon.tl.types.MessageMediaPhoto:
+                path = './images/dialogAttachments/img' + str(msg.media.photo.id) + '.jpg'
+                if os.path.exists(path):
+                    return [{"type": "photo", "url": path}]
+                file = self.client.download_media(msg.media, file=path)
+                return [{"type": "photo", "url": file}]
+            elif type(msg.media) == telethon.tl.types.MessageMediaDocument and \
+                    msg.media.document.mime_type == 'image/webp':
+                print(msg.media.document.__dict__)
+                path = './images/dialogAttachments/imgSticker' + str(msg.media.document.id) + '.webp'
+                if os.path.exists(path):
+                    return [{"type": "sticker", "url": path}]
+                file = self.client.download_media(msg.media, file=path)
+                return [{"type": "sticker", "url": file}]
+        return []
 
     def parseMessage(self, msg):
-        print(msg)
-        if getattr(msg, 'media', None):
-            print("---------- MEDIA -----------")
-            print(msg.media.__dict__)
-            print("---------- END -----------")
-            return '<{}> {}'.format(type(msg.media).__name__, msg.message)
-        elif hasattr(msg, 'message'):
-            print("---------- MESSAGE -----------")
-            print(msg.message)
-            print("---------- END -----------")
-            return msg.message
-        elif hasattr(msg, 'action'):
-            print("---------- ACTION -----------")
-            print(msg.action.__dict__)
-            print("---------- END -----------")
-            return str(msg.action)
-        else:
-            # Unknown message, simply print its class name
-            print("---------- Unknown -----------")
-            print(msg.__dict__)
-            print("---------- END -----------")
-            return type(msg).__name__
+        return msg.message
 
     def getUserById(self, user_ids):
         return []
@@ -157,7 +156,7 @@ class TelegramApi:
     def userInfo(self, user):
         pass
 
-    def sendMessage(self,id, message):
+    def sendMessage(self, id, message):
         print(id)
         self.client.send_message(self.client.get_entity(int(id)), message)
         pass

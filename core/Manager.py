@@ -15,10 +15,11 @@ from UIInit import UIInit
 class Manager(QObject):
     dialogsLoadedSignal = QtCore.pyqtSignal(list)
     loadUserDialogSignal = QtCore.pyqtSignal(list)
+    reloadDialogsSignal = QtCore.pyqtSignal()
 
     onSettingsTab = False
 
-    __authorization = Authorization.getInstance(loadUserDialogSignal)
+    __authorization = None
     __messenger = None
     __ui = None
 
@@ -29,7 +30,8 @@ class Manager(QObject):
         # Handlers connect
         self.loadUserDialogSignal.connect(self.loadUserDialogHandler)
         self.dialogsLoadedSignal.connect(self.dialogsLoadedHandler)
-
+        self.reloadDialogsSignal.connect(self.reloadDialogsHAndler)
+        self.__authorization = Authorization.getInstance(self.reloadDialogsSignal)
         self.__ui = UIInit(self)
         self.__authorization.setWidget(self.__ui)
         self.__reloadDialogs()
@@ -53,7 +55,12 @@ class Manager(QObject):
         pass
 
     def loginThrowVKGroup(self):
-        self.__authorization.loginThrowVKGroup()
+        self.__authorization.authorizationVKGroup()
+        self.__reloadDialogs()
+        pass
+
+    def loginThrowFacebook(self):
+        self.__authorization.authorizationFacebook()
         self.__reloadDialogs()
         pass
 
@@ -84,7 +91,7 @@ class Manager(QObject):
         if self.currentDial is not None:
             message = self.__ui.getMessageText()
             print(message)
-            msgClass = Message({"text": message, "from_id": 0, "my_message": True})
+            msgClass = Message({"text": message, "from_id": 0, "my_message": True,"attachments":[]})
             self.currentDial.sendMessage(msgClass)
             self.__ui.addMessageToLayoutToBottom(msgClass)
             self.__ui.clearMessageText()
@@ -121,7 +128,12 @@ class Manager(QObject):
         self.loadDialogs()
         self.__ui.stopLoadingIndicator()
 
-    @Slot(list, name="loadUserDialogHandler")
+    @Slot(name="reloadDialogs")
+    def reloadDialogsHAndler(self):
+        print("emited")
+        self.__reloadDialogs()
+
+    @Slot(list,name="loadUserDialogHandler")
     def loadUserDialogHandler(self, messages):
         self.__ui.clearMessageLayout()
         for message in messages:
