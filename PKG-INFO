@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: agregator-mess
+Version: 0.0.1
+Summary: University project.
+Home-page: https://github.com/moevm/gui-1h2018-28
+Author: MOEVM
+License: UNKNOWN
+Description: # Агрегатор мессенджеров
+        ## python 3.5.2
+        ## Используемые библиотеки:
+        * PyQt5
+        * vk_api
+        * telethon
+        * pickle
+        
+        # Точка входа в приложение core/Manager.py
+        
+        # Инструкция по сборке приложения
+        1. Установить все зависимости с помощью pip install PyQt5 vk_api telethon pickle
+        2. Перейти в директорию core
+        2. Запустить приложение используя точку входа python Manager.py
+        
+        # Что сейчас работает:
+        * Авторизация  помощью VK user, VK group, telegram user
+        * Загрузка диалогов пользователя
+        * Загрузка изображений диалогов и кеширование их
+        * Загрузка сообщений из выбранного диалога
+        
+        # Макет пользовательского интерфейса
+        
+        Главная страница приложения
+        ![](https://pp.userapi.com/c830308/v830308651/a0d50/2kMY6WXBpv8.jpg)
+        
+Keywords: vk telegram university messenger
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Description-Content-Type: text/markdown

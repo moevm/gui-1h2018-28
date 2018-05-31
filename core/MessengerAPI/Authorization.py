@@ -7,7 +7,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton
 from telethon import TelegramClient
 
-from MessengerAPI.TelegramApi import TelegramApi
+from core.MessengerAPI.TelegramApi import TelegramApi
 
 
 class VKAuth(Qt.QDialog):

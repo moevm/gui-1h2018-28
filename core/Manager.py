@@ -6,10 +6,10 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWidgets import *
 
-from MessengerAPI.Authorization import Authorization
-from MessengerAPI.MessengerAPI import Dialog, Message
-from MessengerAPI.MessengerAPI import MessengerAPI
-from UIInit import UIInit
+from core.MessengerAPI.Authorization import Authorization
+from core.MessengerAPI.MessengerAPI import Dialog, Message
+from core.MessengerAPI.MessengerAPI import MessengerAPI
+from core.UIInit import UIInit
 
 
 class Manager(QObject):
@@ -141,6 +141,9 @@ class Manager(QObject):
         self.__ui.showFirstMessage()
         self.__ui.stopLoadingIndicator()
 
+
+def main():
+    ex = Manager()
 
 if __name__ == '__main__':
     ex = Manager()

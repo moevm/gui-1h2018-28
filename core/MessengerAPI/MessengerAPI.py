@@ -1,8 +1,8 @@
 import PyQt5
 from PyQt5.QtCore import pyqtSignal as Signal
 
-from MessengerAPI.TelegramApi import TelegramApi
-from MessengerAPI.VKApi import VKApi
+from core.MessengerAPI.TelegramApi import TelegramApi
+from core.MessengerAPI.VKApi import VKApi
 
 
 class Dialog:
